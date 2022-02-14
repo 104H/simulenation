@@ -61,6 +61,16 @@ neuron_params = {
             'tau_m': 20.,    # membrane time constant (ms)
         }
 
+snn_parameters = {
+    'populations': ['MGN', 'RE', 'eA1', 'iA1'],
+    'population_size': [NE, NE, NE, NI],
+    'neurons': [neuron_params, neuron_params, neuron_params, neuron_params],
+    'randomize': [
+        {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
+        {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
+        {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
+        {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})}]}
+
 spike_recorder = set_recording_device(start=0., stop=sys.float_info.max, resolution=resolution, record_to='memory',
                                       device_type='spike_recorder')
 spike_recorders = [spike_recorder for _ in snn_parameters['populations']]
@@ -115,6 +125,8 @@ snn_synapses = {
     'conn_specs': [conn_exc, conn_inh, conn_exc, conn_inh],
     'syn_specs': [syn_exc, syn_inh, syn_exc, syn_inh]
 }
+
+"""
 snn_recurrent_connections = NESTConnector(source_network=snn, target_network=snn, connection_parameters=snn_synapses)
 # w_rec = snn_recurrent_connections.compile_weights()
 
@@ -143,5 +155,5 @@ w_rec = topology_connections.compile_weights()
 fig, ax = plt.subplots()
 plot_network_topology(topology_snn, ax=ax, display=False)
 #plot_spatial_connectivity(topology_snn, kernel=conn_dict['kernel'], mask=conn_dict['mask'], ax=ax)
-
+"""
 
