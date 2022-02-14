@@ -39,9 +39,9 @@ reset_nest_kernel(kernel_pars)
 
 # Specify network parameters
 gamma = 0.25               # relative number of inhibitory connections
-NE = 4000                  # number of excitatory neurons (10.000 in [1])
+NE = 400                  # number of excitatory neurons (10.000 in [1])
 NI = int(gamma * NE)       # number of inhibitory neurons
-CE = 1000                  # indegree from excitatory neurons
+CE = 100                  # indegree from excitatory neurons
 CI = int(gamma * CE)       # indegree from inhibitory neurons
 
 # synapse parameters
@@ -94,7 +94,7 @@ I_layer_properties = copy_dict(layer_properties, {'positions': pos_inh})
 
 topology_snn_parameters = {
     'populations': ['MGN', 'RE', 'eA1', 'iA1'],
-    'population_size': [NE, NE, NE, NI],
+    'population_size': [NE, NI, NE, NI],
     'neurons': [neuron_params, neuron_params, neuron_params, neuron_params],
     'randomize': [
         {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
@@ -113,24 +113,35 @@ from fna.tools.network_architect.connectivity import NESTConnector
 
 # Connectivity
 # E synapses
+# synapse_model is a bernoulli synapse https://nest-simulator.readthedocs.io/en/v2.20.1/models/static.html
 syn_exc = {'synapse_model': 'static_synapse', 'delay': d, 'weight': w}
 conn_exc = {'rule': 'fixed_indegree', 'indegree': CE}
 # I synapses
 syn_inh = {'synapse_model': 'static_synapse', 'delay': d, 'weight': - g * w}
 conn_inh = {'rule': 'fixed_indegree', 'indegree': CI}
 
-snn_synapses = {
-    'connect_populations': [('MGN', 'RE'), ('RE', 'MGN'), ('I', 'E'), ('eA1', 'iA1')],
+conn_dict = {'rule': 'pairwise_bernoulli',
+             'mask': {'circular': {'radius': 20.}},
+             'p': nest.spatial_distributions.gaussian(nest.spatial.distance, std=0.25)
+             }
+
+topology_snn_synapses = {
+    'connect_populations': [('MGN', 'RE'), ('RE', 'MGN'), ('eA1', 'MGN'), ('eA1', 'iA1')],
     'weight_matrix': [None, None, None, None],
     'conn_specs': [conn_exc, conn_inh, conn_exc, conn_inh],
     'syn_specs': [syn_exc, syn_inh, syn_exc, syn_inh]
 }
 
+topology_connections = NESTConnector(source_network=topology_snn, target_network=topology_snn,
+                                    connection_parameters=topology_snn_synapses)
+w_rec = topology_connections.compile_weights()
+
+fig, ax = plt.subplots()
+plot_network_topology(topology_snn, ax=ax, display=False)
+#plot_spatial_connectivity(topology_snn, kernel=conn_dict['kernel'], mask=conn_dict['mask'], ax=ax)
+plt.show()
+
 """
-snn_recurrent_connections = NESTConnector(source_network=snn, target_network=snn, connection_parameters=snn_synapses)
-# w_rec = snn_recurrent_connections.compile_weights()
-
-
 # ### 10.2.1. Topological connections
 
 # E synapses
@@ -149,11 +160,6 @@ topology_snn_synapses = {
     'syn_specs': [syn_exc, syn_inh, syn_exc, syn_inh],
 }
 
-topology_connections = NESTConnector(source_network=topology_snn, target_network=topology_snn,
-                                    connection_parameters=topology_snn_synapses)
 w_rec = topology_connections.compile_weights()
-fig, ax = plt.subplots()
-plot_network_topology(topology_snn, ax=ax, display=False)
-#plot_spatial_connectivity(topology_snn, kernel=conn_dict['kernel'], mask=conn_dict['mask'], ax=ax)
 """
 
