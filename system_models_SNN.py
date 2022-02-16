@@ -147,8 +147,9 @@ pg = nest.Create('sinusoidal_poisson_generator', n=num_nodes,
 m = nest.Create('multimeter', num_nodes, {'interval': 0.1, 'record_from': ['rate']})
 
 nest.Connect(m, pg, 'one_to_one') # multimeter to poisson generator
-[nest.Connect(pg, _, 'one_to_one') for _ in spike_recorders] # poisson generator to spike recorders of all populations
-nest.Connect(pg, topology_snn, 'all_to_all') # poisson generator to snn
+#import pdb; pdb.set_trace()
+[nest.Connect(pg, _.nodes, 'all_to_all') for _ in topology_snn.populations.values()] # poisson generator to snn
+[NESTConnector(pg, _, {'conn_specs':conn_exc}) for _ in spike_recorders] # poisson generator to spike recorders
 
 fig, ax = plt.subplots(len(topology_snn.populations), 1)
 # plot_network_topology(topology_snn, ax=ax, display=False)
