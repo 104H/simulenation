@@ -15,6 +15,8 @@ from fna.tools.utils.system import set_kernel_defaults, reset_nest_kernel
 from fna.tools.network_architect.topology import set_positions
 from fna.tools.visualization.plotting import plot_spectral_radius, plot_histograms, plot_spatial_connectivity, plot_network_topology
 
+from fna.tools.network_architect.connectivity import NESTConnector
+
 # Specify system and simulation parameters
 resolution = 0.1
 data_label = 'test_network'
@@ -93,25 +95,9 @@ pos_inh = set_positions(N=NI, dim=2, topology='random', specs=layer_properties)
 E_layer_properties = copy_dict(layer_properties, {'positions': pos_exc})
 I_layer_properties = copy_dict(layer_properties, {'positions': pos_inh})
 
-
-# topology_snn_parameters = {
-#     'populations': ['MGN', 'RE', 'eA1', 'iA1'],
-#     'population_size': [NE, NI, NE, NI],
-#     'neurons': [neuron_params, neuron_params, neuron_params, neuron_params],
-#     'randomize': [
-#         {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
-#         {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
-#         {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
-#         {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})}]}
-
 topology_snn = SpikingNetwork(snn_parameters, label='AdEx with spatial topology',
                               topologies=[E_layer_properties, E_layer_properties, E_layer_properties, I_layer_properties])
 
-
-# # fig, ax = plt.subplots()
-# # plot_network_topology(topology_snn, ax=ax, display=False)
-
-from fna.tools.network_architect.connectivity import NESTConnector
 
 # Connectivity
 # E synapses
@@ -150,6 +136,20 @@ topology_connections = NESTConnector(source_network=topology_snn, target_network
                                      connection_parameters=topology_snn_synapses)
 w_rec = topology_connections.compile_weights()
 
+# possion generator
+num_nodes = 2
+pg = nest.Create('sinusoidal_poisson_generator', n=num_nodes,
+                params={'rate': [10000.0, 0.0],
+                        'amplitude': [5000.0, 10000.0],
+                        'frequency': [10.0, 5.0],
+                        'phase': [0.0, 90.0]})
+
+m = nest.Create('multimeter', num_nodes, {'interval': 0.1, 'record_from': ['rate']})
+
+nest.Connect(m, pg, 'one_to_one') # multimeter to poisson generator
+[nest.Connect(pg, _, 'one_to_one') for _ in spike_recorders] # poisson generator to spike recorders of all populations
+nest.Connect(pg, topology_snn, 'all_to_all') # poisson generator to snn
+
 fig, ax = plt.subplots(len(topology_snn.populations), 1)
 # plot_network_topology(topology_snn, ax=ax, display=False)
 for idx, (pop_name, pop_obj) in enumerate(topology_snn.populations.items()):
@@ -161,26 +161,4 @@ for idx, (pop_name, pop_obj) in enumerate(topology_snn.populations.items()):
 #plot_spatial_connectivity(topology_snn, kernel=conn_dict['kernel'], mask=conn_dict['mask'], ax=ax)
 plt.tight_layout()
 plt.show()
-
-"""
-# ### 10.2.1. Topological connections
-
-# E synapses
-syn_exc = {'synapse_model': 'static_synapse', 'delay': d, 'weight': w}
-# I synapses
-syn_inh = {'synapse_model': 'static_synapse', 'delay': d, 'weight': -g * w}
-
-conn_dict = {'rule': 'pairwise_bernoulli',
-             'mask': {'circular': {'radius': 20.}},
-             'p': nest.spatial_distributions.gaussian(nest.spatial.distance, std=0.25)
-             }
-topology_snn_synapses = {
-    'connect_populations': [('tpE', 'tpE'), ('tpE', 'tpI'), ('tpI', 'tpE'), ('tpI', 'tpI')],
-    'weight_matrix': [None, None, None, None],
-    'conn_specs': [conn_dict, conn_dict, conn_dict, conn_dict],
-    'syn_specs': [syn_exc, syn_inh, syn_exc, syn_inh],
-}
-
-w_rec = topology_connections.compile_weights()
-"""
 
