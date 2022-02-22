@@ -1,0 +1,123 @@
+[utils.parameters:339 - INFO] Running ai_run serially on 1 Parameter Sets
+[utils.parameters - INFO] Running ai_run serially on 1 Parameter Sets
+[utils.parameters:344 - INFO] 
+- Parameters: test_run_NE=1000_T=1
+[utils.parameters - INFO] 
+- Parameters: test_run_NE=1000_T=1
+[fna.tools.utils.logger:102 - INFO] Setting storage paths...
+[fna.tools.utils.logger - INFO] Setting storage paths...
+[fna.networks.snn.snn_network:48 - INFO] Initializing AdEx with spatial topology architecture (NEST-simulated)
+[fna.networks.snn.snn_network - INFO] Initializing AdEx with spatial topology architecture (NEST-simulated)
+[fna.networks.snn.snn_network:50 - WARNING] RNG for SpikingNetwork not set! Results may not be reproducible!
+[fna.networks.snn.snn_network - WARNING] RNG for SpikingNetwork not set! Results may not be reproducible!
+[fna.networks.snn.snn_network:130 - INFO] Creating populations:
+[fna.networks.snn.snn_network - INFO] Creating populations:
+[fna.networks.snn.snn_network:122 - INFO] - Population MGN, with ids [1-1000]
+[fna.networks.snn.snn_network - INFO] - Population MGN, with ids [1-1000]
+[fna.networks.snn.snn_network:122 - INFO] - Population TRN, with ids [1001-2000]
+[fna.networks.snn.snn_network - INFO] - Population TRN, with ids [1001-2000]
+[fna.networks.snn.snn_network:122 - INFO] - Population eA1, with ids [2001-3000]
+[fna.networks.snn.snn_network - INFO] - Population eA1, with ids [2001-3000]
+[fna.networks.snn.snn_network:122 - INFO] - Population iA1, with ids [3001-3250]
+[fna.networks.snn.snn_network - INFO] - Population iA1, with ids [3001-3250]
+[fna.networks.snn.snn_network:465 - INFO] Connecting Devices: 
+[fna.networks.snn.snn_network - INFO] Connecting Devices: 
+[fna.tools.network_architect.base:167 - INFO]   - Attaching spike_recorder with gid [[3251]] to population MGN
+[fna.tools.network_architect.base - INFO]   - Attaching spike_recorder with gid [[3251]] to population MGN
+[fna.networks.snn.snn_network:485 - INFO] - Connecting spike_recorder to MGN, with label MGN_spike_recorder and id 3251
+[fna.networks.snn.snn_network - INFO] - Connecting spike_recorder to MGN, with label MGN_spike_recorder and id 3251
+[fna.tools.network_architect.base:167 - INFO]   - Attaching spike_recorder with gid [[3252]] to population TRN
+[fna.tools.network_architect.base - INFO]   - Attaching spike_recorder with gid [[3252]] to population TRN
+[fna.networks.snn.snn_network:485 - INFO] - Connecting spike_recorder to TRN, with label TRN_spike_recorder and id 3252
+[fna.networks.snn.snn_network - INFO] - Connecting spike_recorder to TRN, with label TRN_spike_recorder and id 3252
+[fna.tools.network_architect.base:167 - INFO]   - Attaching spike_recorder with gid [[3253]] to population eA1
+[fna.tools.network_architect.base - INFO]   - Attaching spike_recorder with gid [[3253]] to population eA1
+[fna.networks.snn.snn_network:485 - INFO] - Connecting spike_recorder to eA1, with label eA1_spike_recorder and id 3253
+[fna.networks.snn.snn_network - INFO] - Connecting spike_recorder to eA1, with label eA1_spike_recorder and id 3253
+[fna.tools.network_architect.base:167 - INFO]   - Attaching spike_recorder with gid [[3254]] to population iA1
+[fna.tools.network_architect.base - INFO]   - Attaching spike_recorder with gid [[3254]] to population iA1
+[fna.networks.snn.snn_network:485 - INFO] - Connecting spike_recorder to iA1, with label iA1_spike_recorder and id 3254
+[fna.networks.snn.snn_network - INFO] - Connecting spike_recorder to iA1, with label iA1_spike_recorder and id 3254
+[fna.networks.snn.snn_network:152 - INFO] Initializing state variables:
+[fna.networks.snn.snn_network - INFO] Initializing state variables:
+[fna.tools.network_architect.base:133 - INFO] - Randomizing V_m state in Population MGN
+[fna.tools.network_architect.base - INFO] - Randomizing V_m state in Population MGN
+[fna.tools.network_architect.base:133 - INFO] - Randomizing V_m state in Population TRN
+[fna.tools.network_architect.base - INFO] - Randomizing V_m state in Population TRN
+[fna.tools.network_architect.base:133 - INFO] - Randomizing V_m state in Population eA1
+[fna.tools.network_architect.base - INFO] - Randomizing V_m state in Population eA1
+[fna.tools.network_architect.base:133 - INFO] - Randomizing V_m state in Population iA1
+[fna.tools.network_architect.base - INFO] - Randomizing V_m state in Population iA1
+[fna.networks.snn.snn_network:1144 - INFO] ========================================================
+[fna.networks.snn.snn_network - INFO] ========================================================
+[fna.networks.snn.snn_network:1145 - INFO]  AdEx with spatial topology architecture (NEST-simulated):
+[fna.networks.snn.snn_network - INFO]  AdEx with spatial topology architecture (NEST-simulated):
+[fna.networks.snn.snn_network:1146 - INFO] --------------------------------------------------------
+[fna.networks.snn.snn_network - INFO] --------------------------------------------------------
+[fna.networks.snn.snn_network:1147 - INFO] - 4 Populations: ['MGN', 'TRN', 'eA1', 'iA1']
+[fna.networks.snn.snn_network - INFO] - 4 Populations: ['MGN', 'TRN', 'eA1', 'iA1']
+[fna.networks.snn.snn_network:1148 - INFO] - Size: 3250 [1000, 1000, 1000, 250]
+[fna.networks.snn.snn_network - INFO] - Size: 3250 [1000, 1000, 1000, 250]
+[fna.networks.snn.snn_network:1149 - INFO] - Neuron models: ['aeif_cond_exp', 'aeif_cond_exp', 'aeif_cond_exp', 'aeif_cond_exp']
+[fna.networks.snn.snn_network - INFO] - Neuron models: ['aeif_cond_exp', 'aeif_cond_exp', 'aeif_cond_exp', 'aeif_cond_exp']
+[fna.networks.snn.snn_network:1151 - INFO] - [1, 1, 1, 1] Devices connected: [['MGN_spike_recorder'], ['TRN_spike_recorder'], ['eA1_spike_recorder'], ['iA1_spike_recorder']]
+[fna.networks.snn.snn_network - INFO] - [1, 1, 1, 1] Devices connected: [['MGN_spike_recorder'], ['TRN_spike_recorder'], ['eA1_spike_recorder'], ['iA1_spike_recorder']]
+[fna.networks.snn.snn_network:1153 - INFO]     MGN: ['MGN_spike_recorder'], ['spike_recorder']
+[fna.networks.snn.snn_network - INFO]     MGN: ['MGN_spike_recorder'], ['spike_recorder']
+[fna.networks.snn.snn_network:1153 - INFO]     TRN: ['TRN_spike_recorder'], ['spike_recorder']
+[fna.networks.snn.snn_network - INFO]     TRN: ['TRN_spike_recorder'], ['spike_recorder']
+[fna.networks.snn.snn_network:1153 - INFO]     eA1: ['eA1_spike_recorder'], ['spike_recorder']
+[fna.networks.snn.snn_network - INFO]     eA1: ['eA1_spike_recorder'], ['spike_recorder']
+[fna.networks.snn.snn_network:1153 - INFO]     iA1: ['iA1_spike_recorder'], ['spike_recorder']
+[fna.networks.snn.snn_network - INFO]     iA1: ['iA1_spike_recorder'], ['spike_recorder']
+[fna.networks.snn.snn_network:1060 - INFO] 
+Extracting and storing recorded activity from devices:
+[fna.networks.snn.snn_network - INFO] 
+Extracting and storing recorded activity from devices:
+[fna.networks.snn.snn_network:1078 - INFO] - Population MGN
+[fna.networks.snn.snn_network - INFO] - Population MGN
+[fna.networks.snn.snn_network:1078 - INFO] - Population TRN
+[fna.networks.snn.snn_network - INFO] - Population TRN
+[fna.networks.snn.snn_network:1078 - INFO] - Population eA1
+[fna.networks.snn.snn_network - INFO] - Population eA1
+[fna.networks.snn.snn_network:1078 - INFO] - Population iA1
+[fna.networks.snn.snn_network - INFO] - Population iA1
+[fna.tools.utils.logger:20 - INFO] ************************************************************
+[fna.tools.utils.logger - INFO] ************************************************************
+[fna.tools.utils.logger - INFO] ************************************************************
+[fna.tools.utils.logger:21 - INFO] ************************ JOB STATS *************************
+[fna.tools.utils.logger - INFO] ************************ JOB STATS *************************
+[fna.tools.utils.logger - INFO] ************************ JOB STATS *************************
+[fna.tools.utils.logger:22 - INFO] ************************************************************
+[fna.tools.utils.logger - INFO] ************************************************************
+[fna.tools.utils.logger - INFO] ************************************************************
+[fna.tools.utils.logger:25 - INFO] Calling command: execute.py --project demyelination -p demyelination/parameters/parametersearch.py -c ai_run
+[fna.tools.utils.logger - INFO] Calling command: execute.py --project demyelination -p demyelination/parameters/parametersearch.py -c ai_run
+[fna.tools.utils.logger - INFO] Calling command: execute.py --project demyelination -p demyelination/parameters/parametersearch.py -c ai_run
+[fna.tools.utils.logger:28 - INFO] 
+[fna.tools.utils.logger - INFO] 
+[fna.tools.utils.logger - INFO] 
+[fna.tools.utils.logger:29 - INFO] System & Resources:
+[fna.tools.utils.logger - INFO] System & Resources:
+[fna.tools.utils.logger - INFO] System & Resources:
+[fna.tools.utils.logger:35 - INFO] 		Memory usage (MB, psutil): 380.52734375
+[fna.tools.utils.logger - INFO] 		Memory usage (MB, psutil): 380.52734375
+[fna.tools.utils.logger - INFO] 		Memory usage (MB, psutil): 380.52734375
+[fna.tools.utils.logger:36 - INFO] 		Peak total memory usage (MB): 380.77734375
+[fna.tools.utils.logger - INFO] 		Peak total memory usage (MB): 380.77734375
+[fna.tools.utils.logger - INFO] 		Peak total memory usage (MB): 380.77734375
+[fna.tools.utils.logger:37 - INFO] 		Peak (self) memory usage (MB): 380.77734375
+[fna.tools.utils.logger - INFO] 		Peak (self) memory usage (MB): 380.77734375
+[fna.tools.utils.logger - INFO] 		Peak (self) memory usage (MB): 380.77734375
+[fna.tools.utils.logger:40 - INFO] 
+[fna.tools.utils.logger - INFO] 
+[fna.tools.utils.logger - INFO] 
+[fna.tools.utils.logger:41 - INFO] Timers:
+[fna.tools.utils.logger - INFO] Timers:
+[fna.tools.utils.logger - INFO] Timers:
+[fna.tools.utils.logger:44 - INFO] 		Parameters: 0.0015003681182861328 s
+[fna.tools.utils.logger - INFO] 		Parameters: 0.0015003681182861328 s
+[fna.tools.utils.logger - INFO] 		Parameters: 0.0015003681182861328 s
+[fna.tools.utils.logger:44 - INFO] 		Experiments: 8.048539161682129 s
+[fna.tools.utils.logger - INFO] 		Experiments: 8.048539161682129 s
+[fna.tools.utils.logger - INFO] 		Experiments: 8.048539161682129 s

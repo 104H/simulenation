@@ -45,8 +45,8 @@ NE = 40                  # number of excitatory neurons (10.000 in [1])
 NI = int(gamma * NE)       # number of inhibitory neurons
 CE = 10                  # indegree from excitatory neurons
 CI = int(gamma * CE)       # indegree from inhibitory neurons
-N_MGN = 10
-N_TRN = 10
+N_MGN = 20
+N_TRN = 20
 
 # synapse parameters
 w = 0.1                    # excitatory synaptic weight (mV)
@@ -96,7 +96,8 @@ E_layer_properties = copy_dict(layer_properties, {'positions': pos_exc})
 I_layer_properties = copy_dict(layer_properties, {'positions': pos_inh})
 
 topology_snn = SpikingNetwork(snn_parameters, label='AdEx with spatial topology',
-                              topologies=[E_layer_properties, E_layer_properties, E_layer_properties, I_layer_properties])
+                              topologies=[E_layer_properties, E_layer_properties, E_layer_properties, I_layer_properties],
+                              spike_recorders=spike_recorders)
 
 
 # Connectivity
@@ -137,29 +138,43 @@ topology_connections = NESTConnector(source_network=topology_snn, target_network
 w_rec = topology_connections.compile_weights()
 
 # possion generator
-num_nodes = 2
-pg = nest.Create('sinusoidal_poisson_generator', n=num_nodes,
-                params={'rate': [10000.0, 0.0],
-                        'amplitude': [5000.0, 10000.0],
-                        'frequency': [10.0, 5.0],
-                        'phase': [0.0, 90.0]})
+num_nodes = 1
+pg = nest.Create('poisson_generator', n=num_nodes, params={'rate': [50000.0]})
 
-m = nest.Create('multimeter', num_nodes, {'interval': 0.1, 'record_from': ['rate']})
+#m = nest.Create('multimeter', num_nodes, {'interval': 0.1, 'record_from': ['rate']})
 
-nest.Connect(m, pg, 'one_to_one') # multimeter to poisson generator
-#import pdb; pdb.set_trace()
-[nest.Connect(pg, _.nodes, 'all_to_all') for _ in topology_snn.populations.values()] # poisson generator to snn
-[NESTConnector(pg, _, {'conn_specs':conn_exc}) for _ in spike_recorders] # poisson generator to spike recorders
+# nest.Connect(m, pg, 'one_to_one') # multimeter to poisson generator
+[nest.Connect(pg, _.nodes, 'all_to_all', syn_spec={'weight': 5.}) for _ in topology_snn.populations.values()] # poisson generator to snn
+#import pdb; pdb.se
+#[nest.Connect(pg, _) for _ in spike_recorders] # poisson generator to spike recorders
 
-fig, ax = plt.subplots(len(topology_snn.populations), 1)
+nest.Simulate(200)
+topology_snn.extract_activity(flush=False)  # this reads out the recordings
+
+# print(topology_snn.spiking_activity[0].spike_counts(10))  # histogram
+
+#####
+# plot spatial positions of neurons
+
+# fig, ax = plt.subplots(len(topology_snn.populations), 1)
 # plot_network_topology(topology_snn, ax=ax, display=False)
-for idx, (pop_name, pop_obj) in enumerate(topology_snn.populations.items()):
-    positions = nest.GetPosition(pop_obj.nodes)
-    pos_x = [x[0] for x in positions]
-    pos_y = [x[1] for x in positions]
-    ax[idx].scatter(pos_x, pos_y, color='k')
-    ax[idx].set_title(pop_name)
+# for idx, (pop_name, pop_obj) in enumerate(topology_snn.populations.items()):
+#     positions = nest.GetPosition(pop_obj.nodes)
+#     pos_x = [x[0] for x in positions]
+#     pos_y = [x[1] for x in positions]
+#     ax[idx].scatter(pos_x, pos_y, color='k')
+#     ax[idx].set_title(pop_name)
 #plot_spatial_connectivity(topology_snn, kernel=conn_dict['kernel'], mask=conn_dict['mask'], ax=ax)
+# plt.tight_layout()
+# plt.show()
+
+
+#####
+# plot spatial positions of neurons
+fig, ax = plt.subplots(len(topology_snn.populations), 1)
+for idx, pop_name in enumerate(topology_snn.population_names):
+    # topology_snn.spiking_activity[idx].raster_plot(with_rate=False, ax=ax[idx], display=False)
+    topology_snn.populations[pop_name].spiking_activity.raster_plot(with_rate=False, ax=ax[idx], display=False)
+    ax[idx].set_title(f'Population {pop_name}')
 plt.tight_layout()
 plt.show()
-

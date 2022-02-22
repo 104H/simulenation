@@ -1,0 +1,4 @@
+/home/pbr-student/simulenation/src/demyelination/data/export/test_run/test_run_NE=100_T=1.sh
+/home/pbr-student/simulenation/src/demyelination/data/export/test_run/test_run_NE=100_T=2.sh
+/home/pbr-student/simulenation/src/demyelination/data/export/test_run/test_run_NE=200_T=1.sh
+/home/pbr-student/simulenation/src/demyelination/data/export/test_run/test_run_NE=200_T=2.sh
