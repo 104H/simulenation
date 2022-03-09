@@ -52,17 +52,17 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
 
     # possion generator
     num_nodes = 1
-    pg = nest.Create('poisson_generator', n=num_nodes, params={'rate': [10000.0]})
+    pg = nest.Create('poisson_generator', n=num_nodes, params={'rate': [parameters.noise_pars.nuX]})
 
     # m = nest.Create('multimeter', num_nodes, {'interval': 0.1, 'record_from': ['rate']})
 
     # nest.Connect(m, pg, 'one_to_one') # multimeter to poisson generator
-    [nest.Connect(pg, _.nodes, 'all_to_all', syn_spec={'weight': 5.}) for _ in
+    [nest.Connect(pg, _.nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_thalamus}) for _ in
      topology_snn.populations.values()]  # poisson generator to snn
     # import pdb; pdb.se
     # [nest.Connect(pg, _) for _ in spike_recorders] # poisson generator to spike recorders
 
-    nest.Simulate(1000)
+    nest.Simulate(500.)
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
 
     fig, ax = plt.subplots(len(topology_snn.populations), 1)
