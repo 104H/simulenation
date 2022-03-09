@@ -32,8 +32,6 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     logger.update_log_handles(job_name=parameters.label, path=storage_paths['logs'])
 
     # now we build the network
-    # layer_properties = {'extent': [2500., 1000.], 'elements': neuron_params['model']}
-
     pos_exc = set_positions(N=parameters.net_pars.population_size[2], dim=2, topology='random',
                             specs=parameters.layer_pars)
     pos_inh = set_positions(N=parameters.net_pars.population_size[3], dim=2, topology='random',
@@ -46,21 +44,15 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     spike_recorders = [spike_recorder for _ in parameters.net_pars.populations]
 
     topology_snn = SpikingNetwork(parameters.net_pars, label='AdEx with spatial topology',
-                                  topologies=[E_layer_properties, E_layer_properties, E_layer_properties,
-                                              I_layer_properties],
+                                  topologies=[E_layer_properties, E_layer_properties,
                                   spike_recorders=spike_recorders)
 
     # possion generator
     num_nodes = 1
     pg = nest.Create('poisson_generator', n=num_nodes, params={'rate': [parameters.noise_pars.nuX]})
 
-    # m = nest.Create('multimeter', num_nodes, {'interval': 0.1, 'record_from': ['rate']})
-
-    # nest.Connect(m, pg, 'one_to_one') # multimeter to poisson generator
-    [nest.Connect(pg, _.nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_thalamus}) for _ in
-     topology_snn.populations.values()]  # poisson generator to snn
-    # import pdb; pdb.se
-    # [nest.Connect(pg, _) for _ in spike_recorders] # poisson generator to spike recorders
+    #[nest.Connect(pg, _.nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_thalamus}) for _ in
+    # topology_snn.populations.values()]  # poisson generator to snn
 
     nest.Simulate(500.)
     topology_snn.extract_activity(flush=False)  # this reads out the recordings

@@ -25,10 +25,8 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 
 # ################################
 ParameterRange = {
-    # 'nuX': np.arange(5., 21, 1.),      # rate of background noise (Hz)
-    # 'gamma': np.arange(5., 13., 1.),     # E/I weight ratio
-    'nuX': [10., 15.],
-    'gamma': [10.],
+    'nuX': np.arange(5., 21, 1.),      # rate of background noise (Hz)
+    'gamma': np.arange(5., 13., 1.),     # E/I weight ratio
     'T': np.arange(1, 2)
 }
 
@@ -46,11 +44,6 @@ def build_parameters(nuX, gamma, T):
                                       data_paths=paths, **system_params)
 
     # Specify network parameters
-    n_ei = 0.25  # relative number of inhibitory connections
-    NE = 40  # number of excitatory neurons (10.000 in [1])
-    NI = int(n_ei * NE)  # number of inhibitory neurons
-    # CE = 10  # indegree from excitatory neurons
-    # CI = int(n_ei * CE)  # indegree from inhibitory neurons
     N_MGN = 1000
     N_TRN = 1000
 
@@ -74,27 +67,15 @@ def build_parameters(nuX, gamma, T):
     }
 
     snn_parameters = {
-        'populations': ['MGN', 'TRN', 'eA1', 'iA1'],
-        'population_size': [N_MGN, N_TRN, NE, NI],
+        'populations': ['MGN', 'TRN'],
+        'population_size': [N_MGN, N_TRN],
         'neurons': [neuron_params, neuron_params, neuron_params, neuron_params],
         'randomize': [
             {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
             {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
-            {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
-            {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})}]}
-
-    # spike_recorder = set_recording_device(start=0., stop=sys.float_info.max, resolution=resolution, record_to='memory',
-    #                                       device_type='spike_recorder')
-    # spike_recorders = [spike_recorder for _ in snn_parameters['populations']]
 
     # for simplicity all other parameters are the same, only topology is added
     layer_properties = {'extent': [2500., 1000.], 'elements': neuron_params['model']}
-
-    # pos_exc = set_positions(N=NE, dim=2, topology='random', specs=layer_properties)
-    # pos_inh = set_positions(N=NI, dim=2, topology='random', specs=layer_properties)
-    # E_layer_properties = copy_dict(layer_properties, {'positions': pos_exc})
-    # I_layer_properties = copy_dict(layer_properties, {'positions': pos_inh})
-
 
     # Connectivity
     # E synapses
@@ -114,26 +95,14 @@ def build_parameters(nuX, gamma, T):
 
     # TGT <- SRC
     topology_snn_synapses = {
-        'connect_populations': [('MGN', 'TRN'), ('TRN', 'MGN'),  # within thalamus
-                                ('eA1', 'MGN'), ('iA1', 'MGN'),  # thalamocortical
-                                ('eA1', 'eA1'), ('iA1', 'eA1'), ('iA1', 'iA1'), ('eA1', 'iA1'),  # recurrent A1
-                                ('MGN', 'eA1'), ('TRN', 'eA1'),  # cortico-thalamic
-                                ],
-        'weight_matrix': [None, None, None, None, None, None, None, None, None, None],
-        'conn_specs': [conn_inh, conn_exc,
-                       conn_exc, conn_exc,
-                       conn_exc, conn_exc, conn_inh, conn_inh,
-                       conn_exc, conn_exc],
-        'syn_specs': [syn_inh, syn_exc,
-                      syn_exc, syn_exc,
-                      syn_exc, syn_exc, syn_inh, syn_inh,
-                      syn_exc, syn_exc]
+        'connect_populations': [('MGN', 'TRN'), ('TRN', 'MGN')],  # within thalamus
+        'weight_matrix': [None, None],
+        'conn_specs': [conn_inh, conn_exc],
+        'syn_specs': [syn_inh, syn_exc]
     }
 
     noise_pars = {
         'nuX': nuX * N_MGN * 0.1,  # amplitude
-        # 'nuX_MGN': nuX,  # amplitude
-        # 'nuX_TRN': nuX,  # amplitude
         'w_thalamus': w  # in the paper it's about 3*w
     }
 
