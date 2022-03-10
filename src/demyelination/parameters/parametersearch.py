@@ -25,8 +25,8 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 
 # ################################
 ParameterRange = {
-    'nuX': np.arange(5., 21, 1.),      # rate of background noise (Hz)
-    'gamma': np.arange(5., 13., 1.),     # E/I weight ratio
+    'nuX': np.arange(5, 21, 1),      # rate of background noise (Hz)
+    'gamma': np.arange(13, 23, 1),     # E/I weight ratio
     'T': np.arange(1, 2)
 }
 
@@ -69,10 +69,12 @@ def build_parameters(nuX, gamma, T):
     snn_parameters = {
         'populations': ['MGN', 'TRN'],
         'population_size': [N_MGN, N_TRN],
-        'neurons': [neuron_params, neuron_params, neuron_params, neuron_params],
+        'neurons': [neuron_params, neuron_params],
         'randomize': [
             {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
             {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
+            ]
+        }
 
     # for simplicity all other parameters are the same, only topology is added
     layer_properties = {'extent': [2500., 1000.], 'elements': neuron_params['model']}
