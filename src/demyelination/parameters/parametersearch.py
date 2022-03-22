@@ -25,8 +25,8 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 
 # ################################
 ParameterRange = {
-    'nuX': np.arange(5, 21, 1),      # rate of background noise (Hz)
-    'gamma': np.arange(13, 23, 1),     # E/I weight ratio
+    'nuX': np.arange(0, 100, 1),      # rate of background noise (Hz)
+    'gamma': np.arange(0, 100, 1),     # E/I weight ratio
     'T': np.arange(1, 2)
 }
 

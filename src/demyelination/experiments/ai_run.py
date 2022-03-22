@@ -62,8 +62,15 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
 
     ''' DUMP ALL POPULATIONS INTO A PICKLE FILE '''
-    for idx, pop_name in enumerate(topology_snn.population_names):
-        topology_snn.populations[pop_name].spiking_activity.save( os.path.join(storage_paths['activity'], f'spk_{pop_name}_{parameters.label}') )
+    import pickle
+    activitylist = dict( zip( topology_snn.population_names, [_.spiking_activity for _ in topology_snn.populations.values()] ) )
+    filepath = os.path.join(storage_paths['activity'], f'spk_{parameters.label}')
+
+    with open(filepath, 'wb') as f:
+        pickle.dump(activitylist, f)
+
+    #for idx, pop_name in enumerate(topology_snn.population_names):
+    #    topology_snn.populations[pop_name].spiking_activity.save( os.path.join(storage_paths['activity'], f'spk_{pop_name}_{parameters.label}') )
 
     ''' MAKE A RASTER PLOT
     fig, ax = plt.subplots(len(topology_snn.populations), 1)
