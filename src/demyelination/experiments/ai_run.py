@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 import nest
 from matplotlib import pyplot as plt
 
@@ -16,6 +17,11 @@ from utils.parameters import ParameterSet
 
 logprint = logger.get_logger(__name__)
 
+class spikesandparams:
+    def __init__ (self, paramdict, spikeobj, metrics):
+        self.params = paramdict
+        self.spikeobj = spikeobj
+        self.metrics = metrics
 
 def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     nest.ResetKernel()
@@ -58,16 +64,34 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     # connecting noise generator to snn
     [nest.Connect(ng, _.nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_thalamus}) for _ in topology_snn.populations.values()]
 
-    nest.Simulate(500.)
+    nest.Simulate(5000.)
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
 
+    print("preparing pickle file", flush=True)
     ''' DUMP ALL POPULATIONS INTO A PICKLE FILE '''
     import pickle
     activitylist = dict( zip( topology_snn.population_names, [_.spiking_activity for _ in topology_snn.populations.values()] ) )
+    print("activity list prepared", flush=True)
+    precomputed = { "pearsoncoeff" : {
+                        "MGN" : topology_snn.populations['MGN'].spiking_activity.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0],
+                        "TRN" : topology_snn.populations['TRN'].spiking_activity.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0]
+                    }
+                }
+
+    print(precomputed, flush=True)
+
+    r = re.findall("_*?(\w+)=(\d+)_", parameters.label)
+    paramsfromfilename = {}
+    [ paramsfromfilename.update( {p[0] : int(p[1])} ) for p in r ]
+
+    o = spikesandparams( paramsfromfilename, activitylist, precomputed )
+
     filepath = os.path.join(storage_paths['activity'], f'spk_{parameters.label}')
 
     with open(filepath, 'wb') as f:
-        pickle.dump(activitylist, f)
+        pickle.dump(o, f)
+
+    print("pickle file saved", flush=True)
 
     #for idx, pop_name in enumerate(topology_snn.population_names):
     #    topology_snn.populations[pop_name].spiking_activity.save( os.path.join(storage_paths['activity'], f'spk_{pop_name}_{parameters.label}') )
