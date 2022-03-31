@@ -25,7 +25,8 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 
 # ################################
 ParameterRange = {
-    'nuX': np.arange(3, 9, 1),      # rate of background noise (Hz)
+    # 'nuX': np.arange(3, 9, 1),      # rate of background noise (Hz)
+    'nuX': [10],      # rate of background noise (Hz)
     'gamma': np.arange(5, 10, 1),     # E/I weight ratio
     'T': np.arange(1, 2)
 }
@@ -34,8 +35,8 @@ ParameterRange = {
 ################################
 #def build_parameters(NE, T):
 def build_parameters(nuX, gamma, T):
-    # system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=6, mem=512000)
-    system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=32, mem=64000, queue="blaustein,hamstein")
+    system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=6, mem=512000)
+    # system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=32, mem=64000, queue="blaustein,hamstein")
 
     # ############################################################
     # Simulation parameters
@@ -79,16 +80,17 @@ def build_parameters(nuX, gamma, T):
     # for simplicity all other parameters are the same, only topology is added
     layer_properties = {'extent': [2500., 1000.], 'elements': neuron_params['model']}
 
+    epsilon = 0.01
     # Connectivity
     # E synapses
     # synapse_model is a bernoulli synapse https://nest-simulator.readthedocs.io/en/v2.20.1/models/static.html
     syn_exc = {'synapse_model': 'static_synapse', 'delay': d, 'weight': w}
     # conn_exc = {'rule': 'fixed_indegree', 'indegree': CE}
-    conn_exc = {'rule': 'pairwise_bernoulli', 'p': 0.01}
+    conn_exc = {'rule': 'pairwise_bernoulli', 'p': epsilon}
     # I synapses
     syn_inh = {'synapse_model': 'static_synapse', 'delay': d, 'weight': - gamma * w}
     # conn_inh = {'rule': 'fixed_indegree', 'indegree': CI}
-    conn_inh = {'rule': 'pairwise_bernoulli', 'p': 0.01}
+    conn_inh = {'rule': 'pairwise_bernoulli', 'p': epsilon}
 
     # conn_dict = {'rule': 'pairwise_bernoulli',
     #              'mask': {'circular': {'radius': 20.}},
@@ -105,7 +107,8 @@ def build_parameters(nuX, gamma, T):
 
     noise_pars = {
         'nuX': nuX * N_MGN * 0.1,  # amplitude
-        'w_thalamus': w  # in the paper it's about 3*w
+        # 'w_thalamus': w  # in the paper it's about 3*w
+        'w_thalamus': 3*w  # in the paper it's about 3*w
     }
 
     # keys need to end with _pars

@@ -9,6 +9,7 @@ from fna.tools.utils import logger
 from fna.tools.utils.data_handling import set_storage_locations
 from fna.tools.network_architect.topology import set_positions
 from fna.networks.snn import SpikingNetwork
+from fna.tools.network_architect.connectivity import NESTConnector
 from fna.tools.utils.operations import copy_dict
 from fna.decoders.extractors import set_recording_device
 from fna.tools.parameters import extract_nestvalid_dict
@@ -54,18 +55,27 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
                                   topologies=[E_layer_properties, I_layer_properties],
                                   spike_recorders=spike_recorders)
 
+    # connect network
+    NESTConnector(source_network=topology_snn, target_network=topology_snn,
+                  connection_parameters=parameters.connection_pars)
+
     # possion generator
     #num_nodes = 1
-    #pg = nest.Create('poisson_generator', n=num_nodes, params={'rate': [parameters.noise_pars.nuX]})
+    pg = nest.Create('poisson_generator', n=1, params={'rate': [parameters.noise_pars.nuX]})
+    # connecting noise generator to snn
+    [nest.Connect(pg, _.nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_thalamus}) for _ in
+     topology_snn.populations.values()]
 
     # noise generator
-    ng = nest.Create('noise_generator', params={'mean': parameters.noise_pars.nuX, 'std': 9, 'dt': 1.0})
-
+    # ng = nest.Create('noise_generator', params={'mean': parameters.noise_pars.nuX, 'std': 9, 'dt': 1.0})
     # connecting noise generator to snn
-    [nest.Connect(ng, _.nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_thalamus}) for _ in topology_snn.populations.values()]
+    # [nest.Connect(ng, _.nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_thalamus}) for _ in topology_snn.populations.values()]
 
-    nest.Simulate(5000.)
+    nest.Simulate(1000.)
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
+    topology_snn.populations['MGN'].spiking_activity.raster_plot(ms=2.)
+    topology_snn.populations['TRN'].spiking_activity.raster_plot(ms=2., color='r')
+    exit()
 
     print("preparing pickle file", flush=True)
     ''' DUMP ALL POPULATIONS INTO A PICKLE FILE '''
