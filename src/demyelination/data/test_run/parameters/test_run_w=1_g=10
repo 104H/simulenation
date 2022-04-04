@@ -1,0 +1,63 @@
+{
+   "kernel_pars": {
+      "resolution": 0.1,
+      "data_prefix": "test_run",
+      "data_path": "/users/hameed/simulenation/src/demyelination/data/",
+      "mpl_path": "/users/hameed/simulenation/src/defaults/matplotlibrc",
+      "overwrite_files": True,
+      "print_time": True,
+      "rng_seeds": [84988044992, 84988044993, 84988044994, 84988044995, 84988044996, 84988044997, 84988044998, 84988044999, 84988045000, 84988045001, 84988045002, 84988045003, 84988045004, 84988045005, 84988045006, 84988045007],
+      "grng_seed": 84988044991,
+      "total_num_virtual_procs": 16,
+      "local_num_threads": 16,
+      "np_seed": 874928017,
+      "system": {
+         "local": True,
+         "system_label": "local",
+         "queueing_system": None,
+         "jdf_template": None,
+         "remote_directory": "/users/hameed/simulenation/src/demyelination/data/export/",
+         "jdf_fields": {
+            "{{ nodes }}": "1",
+            "{{ ppn }}": "16",
+            "{{ walltime }}": "01-00:00:00",
+            "{{ queue }}": "batch",
+         },
+      },
+   },
+   "net_pars": {
+      "populations": ['MGN', 'TRN', 'eA1', 'iA1'],
+      "population_size": [100, 100, 1000, 250],
+      "neurons": [{'model': 'aeif_cond_exp', 'E_L': -70.0, 'V_th': -55.0}, {'model': 'aeif_cond_exp', 'E_L': -70.0, 'V_th': -55.0}, {'model': 'aeif_cond_exp', 'E_L': -70.0, 'V_th': -55.0}, {'model': 'aeif_cond_exp', 'E_L': -70.0, 'V_th': -55.0}],
+      "randomize": [
+{
+         "V_m": (np.random.uniform, {'low': -70.0, 'high': -55.0}),
+},
+
+{
+         "V_m": (np.random.uniform, {'low': -70.0, 'high': -55.0}),
+},
+
+{
+         "V_m": (np.random.uniform, {'low': -70.0, 'high': -55.0}),
+},
+
+{
+         "V_m": (np.random.uniform, {'low': -70.0, 'high': -55.0}),
+},
+
+],
+
+   },
+   "connection_pars": {
+      "connect_populations": [('MGN', 'TRN'), ('TRN', 'MGN'), ('eA1', 'MGN'), ('iA1', 'MGN'), ('eA1', 'eA1'), ('iA1', 'eA1'), ('iA1', 'iA1'), ('eA1', 'iA1'), ('MGN', 'eA1'), ('TRN', 'eA1')],
+      "weight_matrix": [None, None, None, None, None, None, None, None, None, None],
+      "conn_specs": [{'rule': 'fixed_indegree', 'indegree': 2}, {'rule': 'fixed_indegree', 'indegree': 10}, {'rule': 'fixed_indegree', 'indegree': 10}, {'rule': 'fixed_indegree', 'indegree': 10}, {'rule': 'fixed_indegree', 'indegree': 10}, {'rule': 'fixed_indegree', 'indegree': 10}, {'rule': 'fixed_indegree', 'indegree': 2}, {'rule': 'fixed_indegree', 'indegree': 2}, {'rule': 'fixed_indegree', 'indegree': 10}, {'rule': 'fixed_indegree', 'indegree': 10}],
+      "syn_specs": [{'synapse_model': 'static_synapse', 'delay': 1.5, 'weight': -10}, {'synapse_model': 'static_synapse', 'delay': 1.5, 'weight': 1}, {'synapse_model': 'static_synapse', 'delay': 1.5, 'weight': 1}, {'synapse_model': 'static_synapse', 'delay': 1.5, 'weight': 1}, {'synapse_model': 'static_synapse', 'delay': 1.5, 'weight': 1}, {'synapse_model': 'static_synapse', 'delay': 1.5, 'weight': 1}, {'synapse_model': 'static_synapse', 'delay': 1.5, 'weight': -10}, {'synapse_model': 'static_synapse', 'delay': 1.5, 'weight': -10}, {'synapse_model': 'static_synapse', 'delay': 1.5, 'weight': 1}, {'synapse_model': 'static_synapse', 'delay': 1.5, 'weight': 1}],
+   },
+   "layer_pars": {
+      "extent": [2500.0, 1000.0],
+      "elements": "aeif_cond_exp",
+   },
+   "label": "test_run_w=1_g=10",
+}

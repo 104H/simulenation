@@ -1,0 +1,90 @@
+/var/lib/slurm-llnl/slurmd/job3683086/slurm_script: line 12: module: command not found
+
+CommandNotFoundError: Your shell has not been properly configured to use 'conda activate'.
+To initialize your shell, run
+
+    $ conda init <SHELL_NAME>
+
+Currently supported shells are:
+  - bash
+  - fish
+  - tcsh
+  - xonsh
+  - zsh
+  - powershell
+
+See 'conda init --help' for more information and options.
+
+IMPORTANT: You may need to close and restart your shell after running 'conda init'.
+
+
+export TMPDIR=/scratch/3683086
+
+              -- N E S T --
+  Copyright (C) 2004 The NEST Initiative
+
+ Version: UNKNOWN
+ Built: Mar  7 2022 09:06:59
+
+ This program is provided AS IS and comes with
+ NO WARRANTY. See the file LICENSE for details.
+
+ Problems or suggestions?
+   Visit https://www.nest-simulator.org
+
+ Type 'nest.help()' to find out more about NEST.
+
+[data_handling.py:102 - INFO] Setting storage paths...
+
+Apr 04 12:25:40 SimulationManager::set_status [Info]: 
+    Temporal resolution changed.
+[snn_network.py:48 - INFO] Initializing AdEx with spatial topology architecture (NEST-simulated)
+[snn_network.py:50 - WARNING] RNG for SpikingNetwork not set! Results may not be reproducible!
+[snn_network.py:130 - INFO] Creating populations:
+[snn_network.py:122 - INFO] - Population MGN, with ids [1-1000]
+[snn_network.py:122 - INFO] - Population TRN, with ids [1001-1500]
+[snn_network.py:465 - INFO] Connecting Devices: 
+[base.py:167 - INFO]   - Attaching spike_recorder with gid [[1501]] to population MGN
+[snn_network.py:485 - INFO] - Connecting spike_recorder to MGN, with label MGN_spike_recorder and id 1501
+[base.py:167 - INFO]   - Attaching spike_recorder with gid [[1502]] to population TRN
+[snn_network.py:485 - INFO] - Connecting spike_recorder to TRN, with label TRN_spike_recorder and id 1502
+[snn_network.py:152 - INFO] Initializing state variables:
+[base.py:133 - INFO] - Randomizing V_m state in Population MGN
+[base.py:133 - INFO] - Randomizing V_m state in Population TRN
+[snn_network.py:1149 - INFO] ========================================================
+[snn_network.py:1150 - INFO]  AdEx with spatial topology architecture (NEST-simulated):
+[snn_network.py:1151 - INFO] --------------------------------------------------------
+[snn_network.py:1152 - INFO] - 2 Populations: ['MGN', 'TRN']
+[snn_network.py:1153 - INFO] - Size: 1500 [1000, 500]
+[snn_network.py:1154 - INFO] - Neuron models: ['aeif_cond_exp', 'aeif_cond_exp']
+[snn_network.py:1156 - INFO] - [1, 1] Devices connected: [['MGN_spike_recorder'], ['TRN_spike_recorder']]
+[snn_network.py:1158 - INFO]     MGN: ['MGN_spike_recorder'], ['spike_recorder']
+[snn_network.py:1158 - INFO]     TRN: ['TRN_spike_recorder'], ['spike_recorder']
+[connectivity.py:272 - INFO] Connecting networks: AdEx with spatial topology -> AdEx with spatial topology
+[connectivity.py:280 - INFO]     - ('MGN', 'TRN') [static_synapse]
+[connectivity.py:280 - INFO]     - ('TRN', 'MGN') [static_synapse]
+
+Apr 04 12:25:40 NodeManager::prepare_nodes [Info]: 
+    Preparing 1524 nodes for simulation.
+
+Apr 04 12:25:40 SimulationManager::start_updating_ [Info]: 
+    Number of local nodes: 1524
+    Simulation time (ms): 5000
+    Number of OpenMP threads: 6
+    Number of MPI processes: 1
+
+Apr 04 12:25:53 SimulationManager::run [Info]: 
+    Simulation finished.
+[snn_network.py:1060 - INFO] 
+Extracting and storing recorded activity from devices:
+[snn_network.py:1080 - INFO] - Population MGN
+[snn_network.py:1080 - INFO] - Population TRN
+** pyspike ** package is not installed. To have functions using pyspike please install the package.
+** mayavi.mlab ** package is not installed. To have functions using mayavi.mlab please install the package.
+** pyspike ** package is not installed. To have functions using pyspike please install the package.
+** mnist.loader ** package is not installed. To have functions using mnist.loader please install the package.
+** tables ** package is not installed. To have functions using tables please install the package.
+preparing pickle file
+activity list prepared
+{'pearsoncoeff': {'MGN': 0.004404145108721779, 'TRN': 0.7793993457909418}}
+pickle file saved

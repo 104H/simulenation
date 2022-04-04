@@ -1,0 +1,28 @@
+[utils.parameters:348 - INFO] Preparing job description files...
+[utils.parameters - INFO] Preparing job description files...
+[fna.tools.utils.logger:20 - INFO] ************************************************************
+[fna.tools.utils.logger - INFO] ************************************************************
+[fna.tools.utils.logger:21 - INFO] ************************ JOB STATS *************************
+[fna.tools.utils.logger - INFO] ************************ JOB STATS *************************
+[fna.tools.utils.logger:22 - INFO] ************************************************************
+[fna.tools.utils.logger - INFO] ************************************************************
+[fna.tools.utils.logger:25 - INFO] Calling command: execute.py --project demyelination -p demyelination/parameters/parametersearch.py -c ai_run --system=Hambach
+[fna.tools.utils.logger - INFO] Calling command: execute.py --project demyelination -p demyelination/parameters/parametersearch.py -c ai_run --system=Hambach
+[fna.tools.utils.logger:28 - INFO] 
+[fna.tools.utils.logger - INFO] 
+[fna.tools.utils.logger:29 - INFO] System & Resources:
+[fna.tools.utils.logger - INFO] System & Resources:
+[fna.tools.utils.logger:35 - INFO] 		Memory usage (MB, psutil): 193.74609375
+[fna.tools.utils.logger - INFO] 		Memory usage (MB, psutil): 193.74609375
+[fna.tools.utils.logger:36 - INFO] 		Peak total memory usage (MB): 193.74609375
+[fna.tools.utils.logger - INFO] 		Peak total memory usage (MB): 193.74609375
+[fna.tools.utils.logger:37 - INFO] 		Peak (self) memory usage (MB): 193.74609375
+[fna.tools.utils.logger - INFO] 		Peak (self) memory usage (MB): 193.74609375
+[fna.tools.utils.logger:40 - INFO] 
+[fna.tools.utils.logger - INFO] 
+[fna.tools.utils.logger:41 - INFO] Timers:
+[fna.tools.utils.logger - INFO] Timers:
+[fna.tools.utils.logger:44 - INFO] 		Parameters: 0.6288890838623047 s
+[fna.tools.utils.logger - INFO] 		Parameters: 0.6288890838623047 s
+[fna.tools.utils.logger:44 - INFO] 		Cluster job preparation: 51.13958430290222 s
+[fna.tools.utils.logger - INFO] 		Cluster job preparation: 51.13958430290222 s

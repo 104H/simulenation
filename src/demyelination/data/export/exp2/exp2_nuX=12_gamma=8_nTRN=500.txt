@@ -1,0 +1,59 @@
+{
+   "kernel_pars": {
+      "resolution": 0.1,
+      "data_prefix": "exp2",
+      "data_path": "/users/hameed/simulenation/src/demyelination/data/",
+      "mpl_path": "/users/hameed/simulenation/src/defaults/matplotlibrc",
+      "overwrite_files": True,
+      "print_time": False,
+      "rng_seeds": [13217873030, 13217873031, 13217873032, 13217873033, 13217873034, 13217873035],
+      "grng_seed": 13217873029,
+      "total_num_virtual_procs": 6,
+      "local_num_threads": 6,
+      "np_seed": 841430758,
+      "system": {
+         "local": False,
+         "system_label": "Hambach",
+         "queueing_system": "slurm",
+         "jdf_template": "/users/hameed/simulenation/src/defaults/cluster_templates/Hambach.sh",
+         "remote_directory": "/users/hameed/simulenation/src/demyelination/data/export/",
+         "jdf_fields": {
+            "{{ nodes }}": "1",
+            "{{ ppn }}": "6",
+            "{{ walltime }}": "00-24:00:00",
+            "{{ queue }}": "batch",
+         },
+      },
+   },
+   "net_pars": {
+      "populations": ['MGN', 'TRN'],
+      "population_size": [1000, 500],
+      "neurons": [{'model': 'aeif_cond_exp', 'E_L': -70.0, 'V_th': -55.0, 'tau_syn_ex': 2.5, 'tau_syn_in': 10.0}, {'model': 'aeif_cond_exp', 'E_L': -70.0, 'V_th': -55.0, 'tau_syn_ex': 2.5, 'tau_syn_in': 10.0}],
+      "randomize": [
+{
+         "V_m": (np.random.uniform, {'low': -70.0, 'high': -55.0}),
+},
+
+{
+         "V_m": (np.random.uniform, {'low': -70.0, 'high': -55.0}),
+},
+
+],
+
+   },
+   "connection_pars": {
+      "connect_populations": [('MGN', 'TRN'), ('TRN', 'MGN')],
+      "weight_matrix": [None, None],
+      "conn_specs": [{'rule': 'pairwise_bernoulli', 'p': 0.01}, {'rule': 'pairwise_bernoulli', 'p': 0.01}],
+      "syn_specs": [{'synapse_model': 'static_synapse', 'delay': 1.5, 'weight': -8.0}, {'synapse_model': 'static_synapse', 'delay': 1.5, 'weight': 1.0}],
+   },
+   "layer_pars": {
+      "extent": [2500.0, 1000.0],
+      "elements": "aeif_cond_exp",
+   },
+   "noise_pars": {
+      "nuX": 1200.0,
+      "w_thalamus": 3.0,
+   },
+   "label": "exp2_nuX=12_gamma=8_nTRN=500",
+}

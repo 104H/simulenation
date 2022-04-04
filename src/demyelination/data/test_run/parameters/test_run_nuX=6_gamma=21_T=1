@@ -1,0 +1,59 @@
+{
+   "kernel_pars": {
+      "resolution": 0.1,
+      "data_prefix": "test_run",
+      "data_path": "/users/hameed/simulenation/src/demyelination/data/",
+      "mpl_path": "/users/hameed/simulenation/src/defaults/matplotlibrc",
+      "overwrite_files": True,
+      "print_time": True,
+      "rng_seeds": [82850552667, 82850552668, 82850552669, 82850552670, 82850552671, 82850552672, 82850552673, 82850552674, 82850552675, 82850552676, 82850552677, 82850552678, 82850552679, 82850552680, 82850552681, 82850552682],
+      "grng_seed": 82850552666,
+      "total_num_virtual_procs": 16,
+      "local_num_threads": 16,
+      "np_seed": 3041766,
+      "system": {
+         "local": True,
+         "system_label": "local",
+         "queueing_system": None,
+         "jdf_template": None,
+         "remote_directory": "/users/hameed/simulenation/src/demyelination/data/export/",
+         "jdf_fields": {
+            "{{ nodes }}": "1",
+            "{{ ppn }}": "16",
+            "{{ walltime }}": "01-00:00:00",
+            "{{ queue }}": "batch",
+         },
+      },
+   },
+   "net_pars": {
+      "populations": ['MGN', 'TRN'],
+      "population_size": [1000, 1000],
+      "neurons": [{'model': 'aeif_cond_exp', 'E_L': -70.0, 'V_th': -55.0, 'tau_syn_ex': 2.5, 'tau_syn_in': 10.0}, {'model': 'aeif_cond_exp', 'E_L': -70.0, 'V_th': -55.0, 'tau_syn_ex': 2.5, 'tau_syn_in': 10.0}],
+      "randomize": [
+{
+         "V_m": (np.random.uniform, {'low': -70.0, 'high': -55.0}),
+},
+
+{
+         "V_m": (np.random.uniform, {'low': -70.0, 'high': -55.0}),
+},
+
+],
+
+   },
+   "connection_pars": {
+      "connect_populations": [('MGN', 'TRN'), ('TRN', 'MGN')],
+      "weight_matrix": [None, None],
+      "conn_specs": [{'rule': 'pairwise_bernoulli', 'p': 0.01}, {'rule': 'pairwise_bernoulli', 'p': 0.01}],
+      "syn_specs": [{'synapse_model': 'static_synapse', 'delay': 1.5, 'weight': -21.0}, {'synapse_model': 'static_synapse', 'delay': 1.5, 'weight': 1.0}],
+   },
+   "layer_pars": {
+      "extent": [2500.0, 1000.0],
+      "elements": "aeif_cond_exp",
+   },
+   "noise_pars": {
+      "nuX": 600.0,
+      "w_thalamus": 1.0,
+   },
+   "label": "test_run_nuX=6_gamma=21_T=1",
+}
