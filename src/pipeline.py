@@ -49,8 +49,9 @@ def preparedf (dataobjs):
 
     for part in parts:
         for data in dataobjs:
+            data.spikeobj[part].time_offset(250)
             df = df.append({
-                "nux" : data.params['test_run_nuX'],
+                "nux" : data.params['exp1_nuX'],
                 "gamma" : data.params['gamma'],
                 "brainPart" : part,
                 "meanSpkRate" : data.spikeobj[part].mean_rate(),
@@ -87,6 +88,7 @@ def makeplot (rawdata):
     plt.subplots_adjust(left=0.01, right=0.03, top=0.03, bottom=0.02)
 
     data = preparedf(rawdata)
+    print(data)
 
     makesubplot(data, fig, ax[0], "cvIsi")
 

@@ -15,7 +15,7 @@ N = 1000
 # experiments parameters
 project_label = 'demyelination'
 
-experiment_label = 'test_run'
+experiment_label = 'exp2'
 
 # ######################################################################################
 # system parameters
@@ -26,15 +26,15 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 # ################################
 ParameterRange = {
     # 'nuX': np.arange(3, 9, 1),      # rate of background noise (Hz)
-    'nuX': [10],      # rate of background noise (Hz)
-    'gamma': np.arange(5, 10, 1),     # E/I weight ratio
-    'T': np.arange(1, 2)
+    'nuX': np.arange(8, 16),      # rate of background noise (Hz)
+    'gamma': np.arange(2, 11, 1),     # E/I weight ratio
+    'nTRN': [500, 1000]
 }
 
 
 ################################
 #def build_parameters(NE, T):
-def build_parameters(nuX, gamma, T):
+def build_parameters(nuX, gamma, nTRN):
     system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=6, mem=512000)
     # system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=32, mem=64000, queue="blaustein,hamstein")
 
@@ -46,7 +46,7 @@ def build_parameters(nuX, gamma, T):
 
     # Specify network parameters
     N_MGN = 1000
-    N_TRN = 1000
+    N_TRN = nTRN
 
     # synapse parameters
     w = 1.  # excitatory synaptic weight (mV)  - we keep this fixed now, but can change later on

@@ -4,7 +4,8 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task={{ ppn }}
 #SBATCH --time={{ walltime }}
-#SBATCH --partition={{ queue }}
+##SBATCH --partition={{ queue }}
+#SBATCH --partition=hambach,blaustein,hamstein
 ##SBATCH --mem={{ mem }}
 
 ## activate conda and set NEST variables

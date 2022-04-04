@@ -67,15 +67,14 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
      topology_snn.populations.values()]
 
     # noise generator
-    # ng = nest.Create('noise_generator', params={'mean': parameters.noise_pars.nuX, 'std': 9, 'dt': 1.0})
+    ng = nest.Create('noise_generator', params={'mean': parameters.noise_pars.nuX, 'std': 3, 'dt': 1.0, 'start' : 1000, 'stop' : 1050})
     # connecting noise generator to snn
-    # [nest.Connect(ng, _.nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_thalamus}) for _ in topology_snn.populations.values()]
+    nest.Connect(ng, topology_snn.populations['TRN'].nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_thalamus})
 
-    nest.Simulate(1000.)
+    nest.Simulate(5000.)
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
-    topology_snn.populations['MGN'].spiking_activity.raster_plot(ms=2.)
-    topology_snn.populations['TRN'].spiking_activity.raster_plot(ms=2., color='r')
-    exit()
+    #topology_snn.populations['MGN'].spiking_activity.raster_plot(ms=2.)
+    #topology_snn.populations['TRN'].spiking_activity.raster_plot(ms=2., color='r')
 
     print("preparing pickle file", flush=True)
     ''' DUMP ALL POPULATIONS INTO A PICKLE FILE '''
