@@ -2,6 +2,7 @@ import os
 import sys
 import re
 import nest
+import pickle
 from matplotlib import pyplot as plt
 
 from fna.tools.visualization.helper import set_global_rcParams
@@ -52,7 +53,7 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     spike_recorders = [spike_recorder for _ in parameters.net_pars.populations]
 
     topology_snn = SpikingNetwork(parameters.net_pars, label='AdEx with spatial topology',
-                                  topologies=[E_layer_properties, I_layer_properties],
+                                  topologies=[E_layer_properties, I_layer_properties, E_layer_properties, I_layer_properties],
                                   spike_recorders=spike_recorders)
 
     # connect network
@@ -66,10 +67,12 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     [nest.Connect(pg, _.nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_thalamus}) for _ in
      topology_snn.populations.values()]
 
+    '''
     # noise generator
-    ng = nest.Create('noise_generator', params={'mean': parameters.noise_pars.nuX, 'std': 3, 'dt': 1.0, 'start' : 1000, 'stop' : 1050})
+    ng = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_stim, 'start' : 1000, 'stop' : 1025})
     # connecting noise generator to snn
     nest.Connect(ng, topology_snn.populations['TRN'].nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_thalamus})
+    '''
 
     nest.Simulate(5000.)
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
@@ -78,7 +81,6 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
 
     print("preparing pickle file", flush=True)
     ''' DUMP ALL POPULATIONS INTO A PICKLE FILE '''
-    import pickle
     activitylist = dict( zip( topology_snn.population_names, [_.spiking_activity for _ in topology_snn.populations.values()] ) )
     print("activity list prepared", flush=True)
     precomputed = { "pearsoncoeff" : {
@@ -89,11 +91,13 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
 
     print(precomputed, flush=True)
 
+    '''
     r = re.findall("_*?(\w+)=(\d+)_", parameters.label)
     paramsfromfilename = {}
     [ paramsfromfilename.update( {p[0] : int(p[1])} ) for p in r ]
+    '''
 
-    o = spikesandparams( paramsfromfilename, activitylist, precomputed )
+    o = spikesandparams( parameters.label, activitylist, precomputed )
 
     filepath = os.path.join(storage_paths['activity'], f'spk_{parameters.label}')
 

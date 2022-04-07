@@ -23,16 +23,14 @@ def readfiles (path):
 
     for dirpath, _, filenames in os.walk(path):
         for fl in filenames:
-            '''
-            r = re.findall("_*?(\w+)=(\d+)_", fl)
-            params = {}
-            [ params.update( {p[0] : int(p[1])} ) for p in r ]
-
-            d = spikesandparams( params, pd.read_pickle( os.path.join(dirpath, fl) ) )
-            data.append( d )
-            '''
             path = os.path.join(dirpath, fl)
             d = pd.read_pickle( os.path.join(dirpath, fl) )
+            
+            r = re.findall("_(\w+)=([0-9]*[.]*[0-9]*)", fl)
+            paramsfromfilename = {}
+            [ paramsfromfilename.update( {p[0] : float(p[1])} ) for p in r ]
+            d.params = paramsfromfilename
+            
             data.append( d )
 
     return data
@@ -51,7 +49,7 @@ def preparedf (dataobjs):
         for data in dataobjs:
             data.spikeobj[part].time_offset(250)
             df = df.append({
-                "nux" : data.params['exp1_nuX'],
+                "nux" : data.params['exp3_nuX'],
                 "gamma" : data.params['gamma'],
                 "brainPart" : part,
                 "meanSpkRate" : data.spikeobj[part].mean_rate(),
