@@ -27,7 +27,8 @@ ParameterRange = {
     'nuX': np.arange(8, 16),      # rate of background noise (Hz)
     'gamma': np.arange(2, 11, 1),     # E/I weight ratio
     'wMGN': np.arange(1., 3.1, 0.5),
-    'nuX_stim': np.arange(5., 50.1, 5)
+    #'nuX_stim': np.arange(5., 50.1, 5)
+    'nuX_stim': [250., 500., 750., 1000.]
 }
 
 

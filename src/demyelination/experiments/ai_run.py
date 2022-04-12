@@ -67,12 +67,10 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     [nest.Connect(pg, _.nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_thalamus}) for _ in
      topology_snn.populations.values()]
 
-    '''
     # noise generator
-    ng = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_stim, 'start' : 1000, 'stop' : 1025})
+    ng = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_stim, 'start' : 1000., 'stop' : 1025.})
     # connecting noise generator to snn
     nest.Connect(ng, topology_snn.populations['TRN'].nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_thalamus})
-    '''
 
     nest.Simulate(5000.)
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
