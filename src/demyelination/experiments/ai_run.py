@@ -62,17 +62,21 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
 
     # possion generator
     #num_nodes = 1
-    pg = nest.Create('poisson_generator', n=1, params={'rate': [parameters.noise_pars.nuX]})
+    # pg = nest.Create('poisson_generator', n=1, params={'rate': [parameters.noise_pars.nuX]})
+    pg_trn = nest.Create('poisson_generator', n=1, params={'rate': [parameters.noise_pars.nuX_TRN]})
+    pg_mgn = nest.Create('poisson_generator', n=1, params={'rate': [parameters.noise_pars.nuX_MGN]})
     # connecting noise generator to snn
-    [nest.Connect(pg, _.nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_thalamus}) for _ in
-     topology_snn.populations.values()]
+    # [nest.Connect(pg, _.nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_thalamus}) for _ in
+    #  topology_snn.populations.values()]
+    nest.Connect(pg_mgn, topology_snn.find_population('MGN').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_mgn})
+    nest.Connect(pg_trn, topology_snn.find_population('TRN').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_trn})
 
-    # noise generator
-    ng = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_stim, 'start' : 1000., 'stop' : 1025.})
-    # connecting noise generator to snn
-    nest.Connect(ng, topology_snn.populations['TRN'].nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_thalamus})
+    # stimulus generator
+    ng = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_stim, 'start' : 500., 'stop' : 530.})
+    # connecting stimulus !!! generator to snn
+    nest.Connect(ng, topology_snn.populations['TRN'].nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_thalamus})
 
-    nest.Simulate(5000.)
+    nest.Simulate(1000.)
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
     #topology_snn.populations['MGN'].spiking_activity.raster_plot(ms=2.)
     #topology_snn.populations['TRN'].spiking_activity.raster_plot(ms=2., color='r')
@@ -82,8 +86,9 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     activitylist = dict( zip( topology_snn.population_names, [_.spiking_activity for _ in topology_snn.populations.values()] ) )
     print("activity list prepared", flush=True)
     precomputed = { "pearsoncoeff" : {
-                        "MGN" : topology_snn.populations['MGN'].spiking_activity.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0],
-                        "TRN" : topology_snn.populations['TRN'].spiking_activity.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0]
+                        # "MGN" : topology_snn.populations['MGN'].spiking_activity.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0],
+                        # "TRN" : topology_snn.populations['TRN'].spiking_activity.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0]
+                        0., 0.,
                     }
                 }
 
