@@ -13,9 +13,10 @@ from utils.system import set_system_parameters
 # experiments parameters
 project_label = 'demyelination'
 
-experiment_label = 'exp2'
+# experiment_label = 'exp3'
+experiment_label = 'exp4'
 
-# ######################################################################################
+ ######################################################################################
 # system parameters
 system_label = 'local'
 # system_params = set_system_parameters(cluster=system_label)
@@ -23,17 +24,12 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 
 # ################################
 ParameterRange = {
-    # 'nuX': np.arange(3, 9, 1),      # rate of background noise (Hz)
-    'nuX': np.arange(8, 16),      # rate of background noise (Hz)
-    'gamma': np.arange(2, 11, 1),     # E/I weight ratio
-    'wMGN': np.arange(1., 3.1, 0.5)
-    'nuX_stim': np.arange(5., 50.1, 5)
+        'T' : [1, 2]
 }
 
 
 ################################
-#def build_parameters(NE, T):
-def build_parameters(nuX, gamma, wMGN, nuX_stim):
+def build_parameters(T):
     system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=6, mem=512000)
     # system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=32, mem=64000, queue="blaustein,hamstein")
 
@@ -43,14 +39,20 @@ def build_parameters(nuX, gamma, wMGN, nuX_stim):
     kernel_pars = set_kernel_defaults(resolution=resolution, run_type=system_label, data_label=experiment_label,
                                       data_paths=paths, **system_params)
 
+    nuX_TRN = 13.
+    nuX_MGN = 24.
+    gamma = 10. # relative inhibitory to excitatory synaptic weight - gamma
+    wMGN = 3.5 # excitatory synaptic weight (mV)  - we keep this fixed now, but can change later on
+    nuX_stim = 700.
+
     # Specify network parameters
     N_MGN = 1000
     N_TRN = 500
+    nEA1 = 4000
+    nIA1 = 1000
 
     # synapse parameters
-    w_input = 1.  # excitatory synaptic weight (mV)  - we keep this fixed now, but can change later on
-    wMGN = wMGN  # excitatory synaptic weight (mV)  - we keep this fixed now, but can change later on
-    #g = 5.  # relative inhibitory to excitatory synaptic weight - gamma
+    w_input_th = 3.  # excitatory synaptic weight of background noise onto thalamus (mV)
     d = 1.5  # synaptic transmission delay (ms)
 
     neuron_params = {
@@ -70,7 +72,7 @@ def build_parameters(nuX, gamma, wMGN, nuX_stim):
     snn_parameters = {
         'populations': ['MGN', 'TRN', 'eA1', 'iA1'],
         'population_size': [N_MGN, N_TRN, nEA1, nIA1],
-        'neurons': [neuron_params, neuron_params],
+        'neurons': [neuron_params, neuron_params, neuron_params, neuron_params],
         'randomize': [
             {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
             {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
@@ -86,13 +88,12 @@ def build_parameters(nuX, gamma, wMGN, nuX_stim):
     # Connectivity
     # E synapses
     # synapse_model is a bernoulli synapse https://nest-simulator.readthedocs.io/en/v2.20.1/models/static.html
-    syn_exc = {'synapse_model': 'static_synapse', 'delay': d, 'weight': w_input}
-    # conn_exc = {'rule': 'fixed_indegree', 'indegree': CE}
+    syn_exc = {'synapse_model': 'static_synapse', 'delay': d, 'weight': wMGN}
     conn_exc = {'rule': 'pairwise_bernoulli', 'p': epsilon}
+
     # I synapses
     #syn_inh = {'synapse_model': 'static_synapse', 'delay': d, 'weight': - gamma * w_input}
     syn_inh = {'synapse_model': 'static_synapse', 'delay': d, 'weight': - gamma * wMGN}
-    # conn_inh = {'rule': 'fixed_indegree', 'indegree': CI}
     conn_inh = {'rule': 'pairwise_bernoulli', 'p': epsilon}
 
     # conn_dict = {'rule': 'pairwise_bernoulli',
@@ -104,25 +105,33 @@ def build_parameters(nuX, gamma, wMGN, nuX_stim):
     topology_snn_synapses = {
         'connect_populations': [('MGN', 'TRN'), ('TRN', 'MGN'),  # within thalamus
                                 ('eA1', 'MGN'), ('iA1', 'MGN'),  # thalamocortical
-￼                               ('eA1', 'eA1'), ('iA1', 'eA1'), ('iA1', 'iA1'), ('eA1', 'iA1'),  # recurrent A1
-￼                               ('MGN', 'eA1'), ('TRN', 'eA1'),  # cortico-thalamic
-￼                               ],
+                                ('eA1', 'eA1'), ('iA1', 'eA1'), ('iA1', 'iA1'), ('eA1', 'iA1'),  # recurrent A1
+                                ('MGN', 'eA1'), ('TRN', 'eA1'),  # cortico-thalamic
+                                ],
         'weight_matrix': [None, None, None, None, None, None, None, None, None, None],
         'conn_specs': [conn_inh, conn_exc,
                         conn_exc, conn_exc,
-￼                       conn_exc, conn_exc, conn_inh, conn_inh,
-￼                       conn_exc, conn_exc],
+                        conn_exc, conn_exc, conn_inh, conn_inh,
+                        conn_exc, conn_exc],
         'syn_specs': [syn_inh, syn_exc,
                         syn_exc, syn_exc,
                         syn_exc, syn_exc, syn_inh, syn_inh,
                         syn_exc, syn_exc]
     }
 
+
     noise_pars = {
-        'nuX': nuX * N_MGN * 0.1,  # amplitude
-        'w_thalamus': 3*w_input, # in the paper it's about 3*w
+        # 'nuX': nuX * N_MGN * 0.1,  # amplitude
+        'nuX_TRN': nuX_TRN * N_MGN * 0.1,  # amplitude
+        'nuX_MGN': nuX_MGN * N_MGN * 0.1,  # amplitude
+        # 'w_thalamus': 3*w_input, # in the paper it's about 3*w
+        'w_noise_thalamus': w_input_th, # in the paper it's about 3*w
+        # 'w_noise_mgn': w_input_th * alpha, # in the paper it's about 3*w
+        # 'w_noise_trn': w_input_th * beta, # in the paper it's about 3*w
+        'w_noise_mgn': w_input_th,  # in the paper it's about 3*w
+        'w_noise_trn': w_input_th,  # in the paper it's about 3*w
         'wMGN' : wMGN,
-        'nux_stim' : w_stim
+        'nuX_stim' : nuX_stim
     }
 
     # keys need to end with _pars

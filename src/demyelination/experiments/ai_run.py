@@ -78,17 +78,16 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
 
     nest.Simulate(1000.)
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
-    #topology_snn.populations['MGN'].spiking_activity.raster_plot(ms=2.)
-    #topology_snn.populations['TRN'].spiking_activity.raster_plot(ms=2., color='r')
 
     print("preparing pickle file", flush=True)
     ''' DUMP ALL POPULATIONS INTO A PICKLE FILE '''
     activitylist = dict( zip( topology_snn.population_names, [_.spiking_activity for _ in topology_snn.populations.values()] ) )
     print("activity list prepared", flush=True)
     precomputed = { "pearsoncoeff" : {
-                        # "MGN" : topology_snn.populations['MGN'].spiking_activity.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0],
-                        # "TRN" : topology_snn.populations['TRN'].spiking_activity.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0]
-                        0., 0.,
+                        "MGN" : topology_snn.populations['MGN'].spiking_activity.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0],
+                        "TRN" : topology_snn.populations['TRN'].spiking_activity.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0],
+                        "eA1" : topology_snn.populations['eA1'].spiking_activity.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0],
+                        "iA1" : topology_snn.populations['iA1'].spiking_activity.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0]
                     }
                 }
 

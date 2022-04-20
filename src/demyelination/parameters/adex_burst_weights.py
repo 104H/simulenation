@@ -25,13 +25,21 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 
 # ################################
 ParameterRange = {
-    'nuX': np.around(np.arange(3., 3.51, 0.5), decimals=4),
-    'nuX_stim': [700., 800.],
-    'wX_TRN': np.around(np.arange(0.05, .151, 0.05),decimals=4),
-    'wMGN': np.around(np.arange(0.4, 1.11, 0.05),decimals=4),
-    'sigma_MGN': [0.3, 0.4, 0.5],
+    #'nuX': np.around(np.arange(3., 3.51, 0.5), decimals=4), # rate of the noise
+    #'nuX_stim': [700., 800.], # rate of the 25s stim
+    #'wX_TRN': np.around(np.arange(0.05, .151, 0.05),decimals=4), # scaling factor of the noise to the trn
+    #'wMGN': np.around(np.arange(0.4, 1.11, 0.05),decimals=4), # weight from mgn to trn
+    #'sigma_MGN': [0.3, 0.4, 0.5], # standard deviation
+    #'sigma_TRN': [0.3],
+    #'gamma': np.around(np.arange(3., 9.1, 1.),decimals=4)
+    'nuX': [3.5], # rate of the noise
+    'nuX_stim': [700.], # rate of the 25s stim
+    'wX_TRN': [0.05], # scaling factor of the noise to the trn
+    'wMGN': np.around(np.arange(0.4, 1.11, 0.05),decimals=4), # weight from mgn to trn
+    'sigma_MGN': [0.3, 0.4], # standard deviation
     'sigma_TRN': [0.3],
-    'gamma': np.around(np.arange(3., 9.1, 1.),decimals=4)
+    'gamma': np.around(np.arange(4., 10.1, 1.), decimals=4)
+
 }
 
 

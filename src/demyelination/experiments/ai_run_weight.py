@@ -80,12 +80,14 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     # nest.Connect(pg_mgn, topology_snn.find_population('MGN').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_mgn})
     # nest.Connect(pg_trn, topology_snn.find_population('TRN').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_trn})
 
+    ''' Stimulus generator removed for now
     # stimulus generator
     ng = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_stim, 'start' : 500., 'stop' : 530.})
     # connecting stimulus !!! generator to snn
     nest.Connect(ng, topology_snn.populations['TRN'].nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_stim})
+    '''
 
-    nest.Simulate(2000.)
+    nest.Simulate(5000.)
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
     #topology_snn.populations['MGN'].spiking_activity.raster_plot(ms=2.)
     #topology_snn.populations['TRN'].spiking_activity.raster_plot(ms=2., color='r')
@@ -94,10 +96,13 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     ''' DUMP ALL POPULATIONS INTO A PICKLE FILE '''
     activitylist = dict( zip( topology_snn.population_names, [_.spiking_activity for _ in topology_snn.populations.values()] ) )
     print("activity list prepared", flush=True)
+
+    # temp spike objects to not include the first second in the computation
+    temp_mgn = topology_snn.populations['MGN'].spiking_activity.time_slice(2000, 5000)
+    temp_trn = topology_snn.populations['TRN'].spiking_activity.time_slice(2000, 5000)
     precomputed = { "pearsoncoeff" : {
-                        # "MGN" : topology_snn.populations['MGN'].spiking_activity.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0],
-                        # "TRN" : topology_snn.populations['TRN'].spiking_activity.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0]
-                        0., 0.,
+                        "MGN" : temp_mgn.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0],
+                        "TRN" : temp_trn.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0]
                     }
                 }
 
