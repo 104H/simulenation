@@ -360,7 +360,7 @@ class ParameterSpace:
             remote_run_folder = export_folder + self.label + '/'
             project_dir = os.path.abspath(project_dir)
             network_dir = os.path.abspath(project_dir + '/../')
-            py_file_common_header = ("import sys\nsys.path.append('{0}')\nsys.path.append('{1}')\nimport matplotlib"
+            py_file_common_header = ("import nest\nimport sys\nsys.path.append('{0}')\nsys.path.append('{1}')\nimport matplotlib"
                                      "\nmatplotlib.use('Agg')\nfrom fna.tools.parameters import *\nfrom "
                                      "fna.tools.analysis import *\nfrom experiments import {2}\n\n") \
                 .format(project_dir, network_dir, computation_function.__module__.split('.')[1])

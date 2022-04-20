@@ -1,6 +1,7 @@
 """
 
 """
+import nest.random
 import numpy as np
 import sys
 from defaults.paths import set_project_paths
@@ -13,8 +14,8 @@ from utils.system import set_system_parameters
 # experiments parameters
 project_label = 'demyelination'
 
-# experiment_label = 'exp3'
-experiment_label = 'test'
+# experiment_label = 'adex_burst_weights_wIn=0.8'
+experiment_label = 'adex_burst_weights_wIn=0.9'
 
 # ######################################################################################
 # system parameters
@@ -24,30 +25,19 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 
 # ################################
 ParameterRange = {
-    # 'nuX': np.arange(3, 9, 1),      # rate of background noise (Hz)
-    # 'nuX': np.arange(8, 16),      # rate of background noise (Hz)
-    # 'gamma': np.arange(2, 11, 1),     # E/I weight ratio
-    # 'wMGN': np.arange(1., 3.1, 0.5),
-    #'nuX_stim': np.arange(5., 50.1, 5)
-    # 'nuX_stim': [250., 500., 750., 1000.]
-
-    # 'nuX': [15.],
-
-    # 'alpha': [1.],
-    # 'beta': [0.7],
-    'nuX_TRN': [13.],
-    'nuX_MGN': [24.],
-    'gamma': [10.],
-    'wMGN': [3.5],
-    'nuX_stim': [700.]
+    'nuX': np.around(np.arange(3., 3.51, 0.5), decimals=4),
+    'nuX_stim': [700., 800.],
+    'wX_TRN': np.around(np.arange(0.05, .151, 0.05),decimals=4),
+    'wMGN': np.around(np.arange(0.4, 1.11, 0.05),decimals=4),
+    'sigma_MGN': [0.3, 0.4, 0.5],
+    'sigma_TRN': [0.3],
+    'gamma': np.around(np.arange(3., 9.1, 1.),decimals=4)
 }
 
 
 ################################
-#def build_parameters(NE, T):
-# def build_parameters(nuX, gamma, alpha, beta, wMGN, nuX_stim):
-def build_parameters(nuX_TRN, nuX_MGN, gamma, wMGN, nuX_stim):
-    system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=6, mem=512000)
+def build_parameters(nuX, nuX_stim, wX_TRN, wMGN, sigma_MGN, sigma_TRN, gamma):
+    system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=2, mem=512000)
     # system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=32, mem=64000, queue="blaustein,hamstein")
 
     # ############################################################
@@ -58,26 +48,33 @@ def build_parameters(nuX_TRN, nuX_MGN, gamma, wMGN, nuX_stim):
 
     # Specify network parameters
     N_MGN = 1000
-    N_TRN = 500
+    N_TRN = 1000
 
     # synapse parameters
-    w_input_th = 3.  # excitatory synaptic weight of background noise onto thalamus (mV)
+    w_input_th = 0.9  # also 0.8  # excitatory synaptic weight of background noise onto thalamus (mV)
     wMGN = wMGN  # excitatory synaptic weight (mV)  - we keep this fixed now, but can change later on
     #g = 5.  # relative inhibitory to excitatory synaptic weight - gamma
     d = 1.5  # synaptic transmission delay (ms)
 
     neuron_params = {
         'model': 'aeif_cond_exp',
-        # 'C_m': 1.0,      # membrane capacity (pF)
-        'E_L': -70.,  # resting membrane potential (mV)
-        # 'I_e': 0.,       # external input current (pA)
-        # 'V_m': 0.,       # membrane potential (mV) generally the resting potential is -70
-        # 'V_reset': 10.,  # reset membrane potential after a spike (mV)
-        'V_th': -55.,  # spike threshold (mV)
-        # 't_ref': 2.0,    # refractory period (ms)
-        # 'tau_m': 20.,    # membrane time constant (ms)
+        'E_L': -60.,  # resting membrane potential (mV)
+        'C_m': 50.0,      # membrane capacity (pF)
+        'g_L': 5.0,      # leak conductance
+        'V_reset': -52.,  # reset membrane potential after a spike (mV)
+        'V_th': -50.,  # spike threshold (mV)
         'tau_syn_ex': 2.5, # exc. synaptic time constant
         'tau_syn_in': 10., # exc. synaptic time constant
+
+        # initial burst + adaptation
+        "a": 0.5,
+        "b": 10.,
+        'tau_w':150.,
+
+        # # rebound burst
+        # "a": 80.,
+        # "b": 10.,
+        # 'tau_w': 720.,
     }
 
     snn_parameters = {
@@ -98,12 +95,9 @@ def build_parameters(nuX_TRN, nuX_MGN, gamma, wMGN, nuX_stim):
     # E synapses
     # synapse_model is a bernoulli synapse https://nest-simulator.readthedocs.io/en/v2.20.1/models/static.html
     syn_exc = {'synapse_model': 'static_synapse', 'delay': d, 'weight': wMGN}
-    # conn_exc = {'rule': 'fixed_indegree', 'indegree': CE}
     conn_exc = {'rule': 'pairwise_bernoulli', 'p': epsilon}
     # I synapses
-    #syn_inh = {'synapse_model': 'static_synapse', 'delay': d, 'weight': - gamma * w_input}
     syn_inh = {'synapse_model': 'static_synapse', 'delay': d, 'weight': - gamma * wMGN}
-    # conn_inh = {'rule': 'fixed_indegree', 'indegree': CI}
     conn_inh = {'rule': 'pairwise_bernoulli', 'p': epsilon}
 
     # conn_dict = {'rule': 'pairwise_bernoulli',
@@ -120,15 +114,11 @@ def build_parameters(nuX_TRN, nuX_MGN, gamma, wMGN, nuX_stim):
     }
 
     noise_pars = {
-        # 'nuX': nuX * N_MGN * 0.1,  # amplitude
-        'nuX_TRN': nuX_TRN * N_MGN * 0.1,  # amplitude
-        'nuX_MGN': nuX_MGN * N_MGN * 0.1,  # amplitude
-        # 'w_thalamus': 3*w_input, # in the paper it's about 3*w
-        'w_noise_thalamus': w_input_th, # in the paper it's about 3*w
-        # 'w_noise_mgn': w_input_th * alpha, # in the paper it's about 3*w
-        # 'w_noise_trn': w_input_th * beta, # in the paper it's about 3*w
-        'w_noise_mgn': w_input_th,  # in the paper it's about 3*w
-        'w_noise_trn': w_input_th,  # in the paper it's about 3*w
+        'nuX': nuX * N_MGN * 0.1,  # amplitude
+        'w_noise_stim': w_input_th, # in the paper it's about 3*w
+        'w_noise_mgn': np.random.lognormal(w_input_th, np.sqrt(w_input_th) * sigma_MGN, N_MGN),
+        'w_noise_trn': np.random.lognormal(w_input_th * wX_TRN, np.sqrt(w_input_th * wX_TRN) * sigma_TRN, N_TRN),
+
         'wMGN' : wMGN,
         'nuX_stim' : nuX_stim
     }
