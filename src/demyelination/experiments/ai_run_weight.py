@@ -62,19 +62,28 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
 
     # possion generator
     #num_nodes = 1
-    # pg = nest.Create('poisson_generator', n=1, params={'rate': [parameters.noise_pars.nuX]})
-    pg_trn = nest.Create('poisson_generator', n=1, params={'rate': [parameters.noise_pars.nuX_TRN]})
-    pg_mgn = nest.Create('poisson_generator', n=1, params={'rate': [parameters.noise_pars.nuX_MGN]})
+    # pg = nest.Create('poisson_generator', n=topology_snn.find_population('MGN').size, params={'rate': parameters.noise_pars.nuX})
+    pg = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX})
+    for idx in range(topology_snn.find_population('MGN').size):
+        nest.Connect(pg, topology_snn.find_population('MGN').nodes[idx], 'one_to_one', syn_spec={'weight': parameters.noise_pars.w_noise_mgn[idx]})
+        nest.Connect(pg, topology_snn.find_population('TRN').nodes[idx], 'one_to_one', syn_spec={'weight': parameters.noise_pars.w_noise_trn[idx]})
+
+    # plt.hist(parameters.noise_pars.w_noise_mgn, bins=100)
+    # plt.hist(parameters.noise_pars.w_noise_trn, bins=50, alpha=0.5)
+    # plt.show(block=False)
+    # exit(-1)
+    # pg_trn = nest.Create('poisson_generator', n=1, params={'rate': [parameters.noise_pars.nuX_TRN]})
+    # pg_mgn = nest.Create('poisson_generator', n=1, params={'rate': [parameters.noise_pars.nuX_MGN]})
     # connecting noise generator to snn
     # [nest.Connect(pg, _.nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_thalamus}) for _ in
     #  topology_snn.populations.values()]
-    nest.Connect(pg_mgn, topology_snn.find_population('MGN').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_mgn})
-    nest.Connect(pg_trn, topology_snn.find_population('TRN').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_trn})
+    # nest.Connect(pg_mgn, topology_snn.find_population('MGN').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_mgn})
+    # nest.Connect(pg_trn, topology_snn.find_population('TRN').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_trn})
 
     # stimulus generator
     ng = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_stim, 'start' : 500., 'stop' : 530.})
     # connecting stimulus !!! generator to snn
-    nest.Connect(ng, topology_snn.populations['TRN'].nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_thalamus})
+    nest.Connect(ng, topology_snn.populations['TRN'].nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_stim})
 
     nest.Simulate(2000.)
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
