@@ -15,7 +15,7 @@ from utils.system import set_system_parameters
 project_label = 'demyelination'
 
 # experiment_label = 'adex_burst_weights_wIn=0.8'
-experiment_label = 'adex_burst_weights_wIn=0.9'
+experiment_label = 'adex_burst_weights_wIn=0.9_stimulated'
 
 # ######################################################################################
 # system parameters

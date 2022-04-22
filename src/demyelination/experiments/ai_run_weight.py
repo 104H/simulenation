@@ -80,12 +80,12 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     # nest.Connect(pg_mgn, topology_snn.find_population('MGN').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_mgn})
     # nest.Connect(pg_trn, topology_snn.find_population('TRN').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_trn})
 
-    ''' Stimulus generator removed for now
+    #''' Stimulus generator removed for now
     # stimulus generator
-    ng = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_stim, 'start' : 500., 'stop' : 530.})
+    ng = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_stim, 'start' : 1000., 'stop' : 1025.})
     # connecting stimulus !!! generator to snn
     nest.Connect(ng, topology_snn.populations['TRN'].nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_stim})
-    '''
+    #'''
 
     nest.Simulate(5000.)
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
