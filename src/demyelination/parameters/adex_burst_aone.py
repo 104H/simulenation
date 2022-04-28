@@ -14,7 +14,7 @@ from utils.system import set_system_parameters
 project_label = 'demyelination'
 
 # experiment_label = 'exp3'
-experiment_label = 'exp4'
+experiment_label = 'fullmodel'
 
  ######################################################################################
 # system parameters
@@ -24,12 +24,13 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 
 # ################################
 ParameterRange = {
-        'T' : [1, 2]
+        'nuX_aone': np.arange(3., 10.1, 1.),
+        'gamma_aone': np.arange(5., 10.1, 1.),
 }
 
 
 ################################
-def build_parameters(T):
+def build_parameters(nuX_aone, gamma_aone):
     system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=6, mem=512000)
     # system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=32, mem=64000, queue="blaustein,hamstein")
 
@@ -39,62 +40,112 @@ def build_parameters(T):
     kernel_pars = set_kernel_defaults(resolution=resolution, run_type=system_label, data_label=experiment_label,
                                       data_paths=paths, **system_params)
 
-    nuX_TRN = 13.
-    nuX_MGN = 24.
-    gamma = 10. # relative inhibitory to excitatory synaptic weight - gamma
-    wMGN = 3.5 # excitatory synaptic weight (mV)  - we keep this fixed now, but can change later on
+    nuX_th = 3.5
     nuX_stim = 700.
+    gamma_th = 8.   # relative inhibitory to excitatory synaptic weight - gamma
+    wMGN = 0.6      # excitatory synaptic weight (mV)  - we keep this fixed now, but can change later on
+    sigma_MGN = 0.3
+    sigma_TRN = 0.3
+    wX_TRN = 0.5
+
+    w_aone = 1.
+    w_ctx_trn = 0.5     # TODO not set in stone
+    w_ctx_mgn = 0.05    # TODO not set in stone
+    w_mgn_ctx = 1.      # TODO not set in stone
+    # gamma_aone = make_Variable
+    # nuX_aone =  make_Variable
 
     # Specify network parameters
     N_MGN = 1000
-    N_TRN = 500
-    nEA1 = 4000
-    nIA1 = 1000
+    N_TRN = 1000
+    nEA1 = 2000
+    nIA1 = 500
 
     # synapse parameters
-    w_input_th = 3.  # excitatory synaptic weight of background noise onto thalamus (mV)
+    w_input_th = 0.9  # excitatory synaptic weight of background noise onto thalamus (mV)
+    w_input_a1 = 1.  # excitatory synaptic weight of background noise onto A1 (mV)  ?
     d = 1.5  # synaptic transmission delay (ms)
 
-    neuron_params = {
+    neuron_params_aone = {
         'model': 'aeif_cond_exp',
-        # 'C_m': 1.0,      # membrane capacity (pF)
         'E_L': -70.,  # resting membrane potential (mV)
-        # 'I_e': 0.,       # external input current (pA)
-        # 'V_m': 0.,       # membrane potential (mV) generally the resting potential is -70
-        # 'V_reset': 10.,  # reset membrane potential after a spike (mV)
+        'C_m': 150.0,  # membrane capacity (pF)
+        'g_L': 10.0,  # leak conductance  - in combo with C_m you get tau_m = ~15 ms
+        'V_reset': -60.,  # reset membrane potential after a spike (mV)
         'V_th': -55.,  # spike threshold (mV)
-        # 't_ref': 2.0,    # refractory period (ms)
-        # 'tau_m': 20.,    # membrane time constant (ms)
-        'tau_syn_ex': 2.5, # exc. synaptic time constant
-        'tau_syn_in': 10., # exc. synaptic time constant
+        'tau_syn_ex': 5.,  # exc. synaptic time constant
+        'tau_syn_in': 10.,  # exc. synaptic time constant
+
+        # initial burst + adaptation
+        "a": 2.,
+        "b": 60.,
+        'tau_w': 200.,
     }
+
+    neuron_params_thl = {
+        'model': 'aeif_cond_exp',
+        'E_L': -60.,  # resting membrane potential (mV) - see refs
+        'C_m': 50.0,      # membrane capacity (pF)
+        'g_L': 5.0,      # leak conductance  - see refs
+        'V_reset': -52.,  # reset membrane potential after a spike (mV)  - for bustiness
+        'V_th': -50.,  # spike threshold (mV)
+        'tau_syn_ex': 2.5, # exc. synaptic time constant  - mit paper
+        'tau_syn_in': 10., # exc. synaptic time constant  - mit paper
+
+        # initial burst + adaptation
+        "a": 0.5,
+        "b": 10.,
+        'tau_w': 150.,
+    }
+
 
     snn_parameters = {
         'populations': ['MGN', 'TRN', 'eA1', 'iA1'],
         'population_size': [N_MGN, N_TRN, nEA1, nIA1],
-        'neurons': [neuron_params, neuron_params, neuron_params, neuron_params],
+        'neurons': [neuron_params_thl, neuron_params_thl, neuron_params_aone, neuron_params_aone],
         'randomize': [
-            {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
-            {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
-            {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
-            {'V_m': (np.random.uniform, {'low': neuron_params['E_L'], 'high': neuron_params['V_th']})},
+            {'V_m': (np.random.uniform, {'low': neuron_params_thl['E_L'], 'high': neuron_params_thl['V_th']})},
+            {'V_m': (np.random.uniform, {'low': neuron_params_thl['E_L'], 'high': neuron_params_thl['V_th']})},
+            {'V_m': (np.random.uniform, {'low': neuron_params_aone['E_L'], 'high': neuron_params_aone['V_th']})},
+            {'V_m': (np.random.uniform, {'low': neuron_params_aone['E_L'], 'high': neuron_params_aone['V_th']})},
             ]
         }
 
     # for simplicity all other parameters are the same, only topology is added
-    layer_properties = {'extent': [2500., 1000.], 'elements': neuron_params['model']}
+    # TODO we may use this later, but not now
+    layer_properties = {'extent': [2500., 1000.], 'elements': neuron_params_aone['model']}
 
-    epsilon = 0.01
     # Connectivity
+    epsilon_th = 0.01
+    epsilon_aone = 0.1
+    epsilon_mgn_ctx = 0.05  # TODO look up literature ?
+    epsilon_ctx_trn = 0.05  # TODO look up literature ?
+    epsilon_ctx_mgn = 0.05  # TODO look up literature ?
+
     # E synapses
     # synapse_model is a bernoulli synapse https://nest-simulator.readthedocs.io/en/v2.20.1/models/static.html
-    syn_exc = {'synapse_model': 'static_synapse', 'delay': d, 'weight': wMGN}
-    conn_exc = {'rule': 'pairwise_bernoulli', 'p': epsilon}
+    syn_exc_mgn = {'synapse_model': 'static_synapse', 'delay': d, 'weight': wMGN}
+    conn_exc_mgn = {'rule': 'pairwise_bernoulli', 'p': epsilon_th}
 
     # I synapses
-    #syn_inh = {'synapse_model': 'static_synapse', 'delay': d, 'weight': - gamma * w_input}
-    syn_inh = {'synapse_model': 'static_synapse', 'delay': d, 'weight': - gamma * wMGN}
-    conn_inh = {'rule': 'pairwise_bernoulli', 'p': epsilon}
+    syn_inh_mgn = {'synapse_model': 'static_synapse', 'delay': d, 'weight': - gamma_th * wMGN}
+    conn_inh_mgn = {'rule': 'pairwise_bernoulli', 'p': epsilon_th}
+
+    syn_inh_aone = {'synapse_model': 'static_synapse', 'delay': d, 'weight': - gamma_aone * w_aone}
+    conn_inh_aone = {'rule': 'pairwise_bernoulli', 'p': epsilon_aone}
+
+    syn_exc_aone = {'synapse_model': 'static_synapse', 'delay': d, 'weight': w_aone}
+    conn_exc_aone = {'rule': 'pairwise_bernoulli', 'p': epsilon_aone}
+
+    # thalamocortical projections: to both eA1 and iA1
+    syn_exc_mgn_ctx = {'synapse_model': 'static_synapse', 'delay': d, 'weight': w_mgn_ctx}
+    conn_exc_mgn_ctx = {'rule': 'pairwise_bernoulli', 'p': epsilon_mgn_ctx}
+
+    # CORTICO-THALAMIC projections
+    syn_exc_ctx_trn = {'synapse_model': 'static_synapse', 'delay': d, 'weight': w_ctx_trn}
+    syn_exc_ctx_mgn = {'synapse_model': 'static_synapse', 'delay': d, 'weight': w_ctx_mgn}
+    conn_exc_ctx_trn = {'rule': 'pairwise_bernoulli', 'p': epsilon_ctx_trn}
+    conn_exc_ctx_mgn = {'rule': 'pairwise_bernoulli', 'p': epsilon_ctx_mgn}
 
     # conn_dict = {'rule': 'pairwise_bernoulli',
     #              'mask': {'circular': {'radius': 20.}},
@@ -109,27 +160,25 @@ def build_parameters(T):
                                 ('MGN', 'eA1'), ('TRN', 'eA1'),  # cortico-thalamic
                                 ],
         'weight_matrix': [None, None, None, None, None, None, None, None, None, None],
-        'conn_specs': [conn_inh, conn_exc,
-                        conn_exc, conn_exc,
-                        conn_exc, conn_exc, conn_inh, conn_inh,
-                        conn_exc, conn_exc],
-        'syn_specs': [syn_inh, syn_exc,
-                        syn_exc, syn_exc,
-                        syn_exc, syn_exc, syn_inh, syn_inh,
-                        syn_exc, syn_exc]
+        # TODO add rest / update
+        'conn_specs': [conn_inh_mgn, conn_exc_mgn,
+                        conn_exc_mgn_ctx, conn_exc_mgn_ctx,
+                        conn_exc_aone, conn_exc_aone, conn_inh_aone, conn_inh_aone,
+                        conn_exc_ctx_mgn, conn_exc_ctx_trn],
+        'syn_specs': [syn_inh_mgn, syn_exc_mgn,
+                        syn_exc_mgn_ctx, syn_exc_mgn_ctx,
+                        syn_exc_aone, syn_exc_aone, syn_inh_aone, syn_inh_aone,
+                        syn_exc_ctx_mgn, syn_exc_ctx_trn]
     }
 
 
     noise_pars = {
-        # 'nuX': nuX * N_MGN * 0.1,  # amplitude
-        'nuX_TRN': nuX_TRN * N_MGN * 0.1,  # amplitude
-        'nuX_MGN': nuX_MGN * N_MGN * 0.1,  # amplitude
-        # 'w_thalamus': 3*w_input, # in the paper it's about 3*w
-        'w_noise_thalamus': w_input_th, # in the paper it's about 3*w
-        # 'w_noise_mgn': w_input_th * alpha, # in the paper it's about 3*w
-        # 'w_noise_trn': w_input_th * beta, # in the paper it's about 3*w
-        'w_noise_mgn': w_input_th,  # in the paper it's about 3*w
-        'w_noise_trn': w_input_th,  # in the paper it's about 3*w
+        'nuX_th': nuX_th * N_MGN * 0.1,  # amplitude
+        'w_noise_stim': w_input_th,  # in the paper it's about 3*w
+        'w_noise_mgn': np.random.lognormal(w_input_th, np.sqrt(w_input_th) * sigma_MGN, N_MGN),
+        'w_noise_trn': np.random.lognormal(w_input_th * wX_TRN, np.sqrt(w_input_th * wX_TRN) * sigma_TRN, N_TRN),
+        'w_noise_ctx' : 1,
+        'nuX_aone' : nuX_aone,
         'wMGN' : wMGN,
         'nuX_stim' : nuX_stim
     }
