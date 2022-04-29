@@ -4,6 +4,8 @@ data/
 *.png
 *pycache*
 
+*.swp
+
 *.out
 
 # Byte-compiled / optimized / DLL files
