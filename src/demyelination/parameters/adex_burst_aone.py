@@ -24,13 +24,14 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 
 # ################################
 ParameterRange = {
-        'nuX_aone': np.arange(3., 10.1, 1.),
-        'gamma_aone': np.arange(5., 10.1, 1.),
+        'w_ctx_trn' : [0.08],
+        'w_ctx_mgn' : [0.04],
+        'w_mgn_ctx' : [0.5]
 }
 
 
 ################################
-def build_parameters(nuX_aone, gamma_aone):
+def build_parameters(w_ctx_trn, w_ctx_mgn, w_mgn_ctx):
     system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=6, mem=512000)
     # system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=32, mem=64000, queue="blaustein,hamstein")
 
@@ -42,18 +43,17 @@ def build_parameters(nuX_aone, gamma_aone):
 
     nuX_th = 3.5
     nuX_stim = 700.
-    gamma_th = 8.   # relative inhibitory to excitatory synaptic weight - gamma
+    gamma_th = 9.   # relative inhibitory to excitatory synaptic weight - gamma
     wMGN = 0.6      # excitatory synaptic weight (mV)  - we keep this fixed now, but can change later on
     sigma_MGN = 0.3
     sigma_TRN = 0.3
-    wX_TRN = 0.5
+    wX_TRN = 0.05
 
-    w_aone = 1.
-    w_ctx_trn = 0.5     # TODO not set in stone
-    w_ctx_mgn = 0.05    # TODO not set in stone
-    w_mgn_ctx = 1.      # TODO not set in stone
-    # gamma_aone = make_Variable
-    # nuX_aone =  make_Variable
+    nuX_aone = 6.0
+    gamma_aone = 10.
+    w_aone = 0.5
+
+    w_input_aone = 1.
 
     # Specify network parameters
     N_MGN = 1000
@@ -119,7 +119,7 @@ def build_parameters(nuX_aone, gamma_aone):
     epsilon_th = 0.01
     epsilon_aone = 0.1
     epsilon_mgn_ctx = 0.05  # TODO look up literature ?
-    epsilon_ctx_trn = 0.05  # TODO look up literature ?
+    epsilon_ctx_trn = 0.03  # TODO look up literature ?
     epsilon_ctx_mgn = 0.05  # TODO look up literature ?
 
     # E synapses
@@ -177,8 +177,8 @@ def build_parameters(nuX_aone, gamma_aone):
         'w_noise_stim': w_input_th,  # in the paper it's about 3*w
         'w_noise_mgn': np.random.lognormal(w_input_th, np.sqrt(w_input_th) * sigma_MGN, N_MGN),
         'w_noise_trn': np.random.lognormal(w_input_th * wX_TRN, np.sqrt(w_input_th * wX_TRN) * sigma_TRN, N_TRN),
-        'w_noise_ctx' : 1,
-        'nuX_aone' : nuX_aone,
+        'w_noise_ctx' : w_input_aone,
+        'nuX_aone' : nuX_aone * nEA1 * 0.1,
         'wMGN' : wMGN,
         'nuX_stim' : nuX_stim
     }
