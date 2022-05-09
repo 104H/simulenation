@@ -4,6 +4,7 @@ import re
 import nest
 import pickle
 from matplotlib import pyplot as plt
+import numpy as np
 
 from fna.tools.visualization.helper import set_global_rcParams
 from fna.tools.utils import logger
@@ -24,10 +25,21 @@ class spikesandparams:
         self.params = paramdict
         self.spikeobj = spikeobj
         self.metrics = metrics
+        self.calcium = { 'eA1' : [], 'iA1' : [] }
+        self.connectivity = { 'eA1' : [], 'iA1' : [] }
+
+def record_ca(population):
+        return np.mean(population.nodes.Ca)
+
+def record_connectivity(population, synType):
+        t = "ex" if synType == "excitatory" else "in"
+
+        syn_elems_e = nest.GetStatus(population.nodes, 'synaptic_elements')
+        return sum(neuron['Axon_' + t]['z_connected'] for neuron in syn_elems_e)
 
 def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     nest.ResetKernel()
-    nest.rng_seed = 12345
+
     # ############################ SYSTEM
     # experiments parameters
     if not isinstance(parameters, ParameterSet):
@@ -37,6 +49,7 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
                                           parameters.label, save=save)
     # set kernel parameters after reset
     nest.SetKernelStatus(extract_nestvalid_dict(parameters.kernel_pars.as_dict(), param_type='kernel'))
+    nest.local_num_threads = 1 # can't run plasticity with multiple threads
 
     logger.update_log_handles(job_name=parameters.label, path=storage_paths['logs'])
 
@@ -54,33 +67,57 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     spike_recorders = [spike_recorder for _ in parameters.net_pars.populations]
 
     topology_snn = SpikingNetwork(parameters.net_pars, label='AdEx with spatial topology',
-                                  topologies=[E_layer_properties, I_layer_properties, E_layer_properties, I_layer_properties],
+                                  topologies=[E_layer_properties, I_layer_properties],
                                   spike_recorders=spike_recorders)
+
+    synaptic_elements = {
+        'Den_ex': parameters.growth_pars['growth_curve_e_e'],
+        'Den_in': parameters.growth_pars['growth_curve_e_i'],
+        'Axon_ex': parameters.growth_pars['growth_curve_e_e'],
+    }
+
+    synaptic_elements_i = {
+        'Den_ex': parameters.growth_pars['growth_curve_i_e'],
+        'Den_in': parameters.growth_pars['growth_curve_i_i'],
+        'Axon_in': parameters.growth_pars['growth_curve_i_i'],
+    }
+
+    nest.SetStatus(topology_snn.find_population('eA1').nodes, 'synaptic_elements', synaptic_elements)
+    nest.SetStatus(topology_snn.find_population('iA1').nodes, 'synaptic_elements', synaptic_elements_i)
 
     # connect network
     NESTConnector(source_network=topology_snn, target_network=topology_snn, connection_parameters=parameters.connection_pars)
 
+    ''' Thalamus Removed
     # possion generator
     pg_th = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_th})
     for idx in range(topology_snn.find_population('MGN').size):
         nest.Connect(pg_th, topology_snn.find_population('MGN').nodes[idx], 'one_to_one', syn_spec={'weight': parameters.noise_pars.w_noise_mgn[idx]})
         nest.Connect(pg_th, topology_snn.find_population('TRN').nodes[idx], 'one_to_one', syn_spec={'weight': parameters.noise_pars.w_noise_trn[idx]})
+    '''
 
     pg_aone = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_aone})
     nest.Connect(pg_aone, topology_snn.find_population('eA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx})
     nest.Connect(pg_aone, topology_snn.find_population('iA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx})
 
-    # plt.hist(parameters.noise_pars.w_noise_mgn, bins=100)
-    # plt.hist(parameters.noise_pars.w_noise_trn, bins=50, alpha=0.5)
-    # plt.show(block=False)
-    # exit(-1)
-    # pg_trn = nest.Create('poisson_generator', n=1, params={'rate': [parameters.noise_pars.nuX_TRN]})
-    # pg_mgn = nest.Create('poisson_generator', n=1, params={'rate': [parameters.noise_pars.nuX_MGN]})
-    # connecting noise generator to snn
-    # [nest.Connect(pg, _.nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_thalamus}) for _ in
-    #  topology_snn.populations.values()]
-    # nest.Connect(pg_mgn, topology_snn.find_population('MGN').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_mgn})
-    # nest.Connect(pg_trn, topology_snn.find_population('TRN').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_trn})
+    nest.structural_plasticity_update_interval = 100.
+
+    nest.CopyModel('static_synapse', 'synapse_ex')
+    nest.SetDefaults('synapse_ex', {'weight': 585.0, 'delay': .1})
+    nest.CopyModel('static_synapse', 'synapse_in')
+    nest.SetDefaults('synapse_in', {'weight': -585.0, 'delay': .1})
+    nest.structural_plasticity_synapses = {
+            'synapse_ex': {
+                'synapse_model': 'synapse_ex',
+                'post_synaptic_element': 'Den_ex',
+                'pre_synaptic_element': 'Axon_ex',
+            },
+            'synapse_in': {
+                'synapse_model': 'synapse_in',
+                'post_synaptic_element': 'Den_in',
+                'pre_synaptic_element': 'Axon_in',
+            },
+        }
 
     ''' Stimulus generator removed for now
     # stimulus generator
@@ -89,14 +126,23 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     nest.Connect(ng, topology_snn.populations['TRN'].nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_stim})
     '''
 
-    nest.Simulate(1000.)
+    nest.EnableStructuralPlasticity()
+
+    o = spikesandparams(parameters.label, None, None)
+
+    record_interval = 50.
+    for _ in np.arange(0., 5000., record_interval):
+            nest.Simulate(record_interval)
+
+            o.calcium['eA1'].append( record_ca(topology_snn.find_population('eA1')) )
+            o.calcium['iA1'].append( record_ca(topology_snn.find_population('iA1')) )
+
+            o.connectivity['eA1'].append( record_connectivity(topology_snn.find_population('eA1'), "excitatory") )
+            o.connectivity['iA1'].append( record_connectivity(topology_snn.find_population('iA1'), "inhibitory") )
+
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
 
-    print("preparing pickle file", flush=True)
-    ''' DUMP ALL POPULATIONS INTO A PICKLE FILE '''
-    activitylist = dict( zip( topology_snn.population_names, [_.spiking_activity for _ in topology_snn.populations.values()] ) )
-    print("activity list prepared", flush=True)
-
+    ''' Pearson Coeff Not Needed Now
     # temp spike objects to not include the first second in the computation
     temp_mgn = topology_snn.populations['MGN'].spiking_activity.time_slice(2000, 5000)
     temp_trn = topology_snn.populations['TRN'].spiking_activity.time_slice(2000, 5000)
@@ -111,12 +157,13 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
                 }
 
     print(precomputed, flush=True)
+    '''
 
-    o = spikesandparams( parameters.label, activitylist, precomputed )
+    ''' DUMP ALL POPULATIONS INTO A PICKLE FILE '''
+    o.spikeobj = dict( zip( topology_snn.population_names, [_.spiking_activity for _ in topology_snn.populations.values()] ) )
 
     filepath = os.path.join(storage_paths['activity'], f'spk_{parameters.label}')
 
     with open(filepath, 'wb') as f:
         pickle.dump(o, f)
 
-    print("pickle file saved", flush=True)
