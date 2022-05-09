@@ -3,6 +3,7 @@ data/
 *.pyc
 *.png
 *pycache*
+*.swp
 
 *.swp
 

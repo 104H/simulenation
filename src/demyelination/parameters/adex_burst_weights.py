@@ -15,7 +15,7 @@ from utils.system import set_system_parameters
 project_label = 'demyelination'
 
 # experiment_label = 'adex_burst_weights_wIn=0.8'
-experiment_label = 'adex_burst_weights_wIn=0.9_stimulated'
+experiment_label = 'thalamus'
 
 # ######################################################################################
 # system parameters
@@ -35,10 +35,11 @@ ParameterRange = {
     'nuX': [3.5], # rate of the noise
     'nuX_stim': [700.], # rate of the 25s stim
     'wX_TRN': [0.05], # scaling factor of the noise to the trn
-    'wMGN': np.around(np.arange(0.4, 1.11, 0.05),decimals=4), # weight from mgn to trn
-    'sigma_MGN': [0.3, 0.4], # standard deviation
+    #'wMGN': np.around(np.arange(0.4, 1.11, 0.05),decimals=4), # weight from mgn to trn
+    'wMGN': [0.6], # weight from mgn to trn
+    'sigma_MGN': [0.3], # standard deviation
     'sigma_TRN': [0.3],
-    'gamma': np.around(np.arange(4., 10.1, 1.), decimals=4)
+    'gamma': [9]
 
 }
 
