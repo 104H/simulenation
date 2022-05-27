@@ -13,7 +13,6 @@ from utils.system import set_system_parameters
 # experiments parameters
 project_label = 'demyelination'
 
-# experiment_label = 'exp3'
 experiment_label = 'plasticity-aone'
 
  ######################################################################################
@@ -24,12 +23,16 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 
 # ################################
 ParameterRange = {
-        'T' : [0]
+        'T' : [0],
+        #'eCa' : np.arange(0.2, 2., 0.4),
+        'eCa' : [0.1],
+        #'iCa' : np.arange(0.2, .6, 0.2),
+        'iCa' : [0.1],
 }
 
 
 ################################
-def build_parameters(T):
+def build_parameters(T, eCa, iCa):
     system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=6, mem=512000)
     # system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=32, mem=64000, queue="blaustein,hamstein")
 
@@ -49,11 +52,12 @@ def build_parameters(T):
     wX_TRN = 0.05
     '''
 
-    nuX_aone = 100.
+    nuX_aone = 10. # used to be 10.
     gamma_aone = 10.
-    w_aone = .05
+    w_aone = .5
 
-    w_input_aone = 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
+    w_input_aone_ex = 15. # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
+    w_input_aone_in = 25. # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
     #w_ctx_trn = 0.08
     #w_ctx_mgn = 0.04
     #w_mgn_ctx = 0.5
@@ -119,19 +123,20 @@ def build_parameters(T):
     # Plasticity Parameters
     update_interval = 1000
 
+    gr_scaling = 0.0001
     # Excitatory synaptic elements of excitatory neurons
     growth_curve_e_e = {
         'growth_curve': "gaussian",
-        'growth_rate': 0.0001,  # (elements/ms)
+        'growth_rate': 1 * gr_scaling,  # (elements/ms)
         'continuous': False,
         'eta': 0.0,  # Ca2+
-        'eps': 1.5,  # Ca2+
+        'eps': eCa,  # Ca2+
     }
 
     # Inhibitory synaptic elements of excitatory neurons
     growth_curve_e_i = {
         'growth_curve': "gaussian",
-        'growth_rate': 0.0001,  # (elements/ms)
+        'growth_rate': 1 * gr_scaling,  # (elements/ms)
         'continuous': False,
         'eta': 0.0,  # Ca2+
         'eps': growth_curve_e_e['eps'],  # Ca2+
@@ -140,16 +145,16 @@ def build_parameters(T):
     # Excitatory synaptic elements of inhibitory neurons
     growth_curve_i_e = {
         'growth_curve': "gaussian",
-        'growth_rate': 0.0004,  # (elements/ms)
+        'growth_rate': 4 * gr_scaling,  # (elements/ms)
         'continuous': False,
         'eta': 0.0,  # Ca2+
-        'eps': 0.2,  # Ca2+
+        'eps': iCa,  # Ca2+
     }
 
     # Inhibitory synaptic elements of inhibitory neurons
     growth_curve_i_i = {
         'growth_curve': "gaussian",
-        'growth_rate': 0.0001,  # (elements/ms)
+        'growth_rate': 1 * gr_scaling,  # (elements/ms)
         'continuous': False,
         'eta': 0.0,  # Ca2+
         'eps': growth_curve_i_e['eps']  # Ca2+
@@ -220,7 +225,8 @@ def build_parameters(T):
                                 ],
         'weight_matrix': [None, None, None, None],
         # TODO add rest / update
-        'conn_specs': [conn_exc_aone, conn_exc_aone, conn_inh_aone, conn_inh_aone,
+        #'conn_specs': [conn_exc_aone, conn_exc_aone, conn_inh_aone, conn_inh_aone,
+        'conn_specs': [None, None, None, None,
                         ],
         'syn_specs': [syn_exc_aone, syn_exc_aone, syn_inh_aone, syn_inh_aone,
                       ]
@@ -232,7 +238,8 @@ def build_parameters(T):
         #'w_noise_stim': w_input_th,  # in the paper it's about 3*w
         #'w_noise_mgn': np.random.lognormal(w_input_th, np.sqrt(w_input_th) * sigma_MGN, N_MGN),
         #'w_noise_trn': np.random.lognormal(w_input_th * wX_TRN, np.sqrt(w_input_th * wX_TRN) * sigma_TRN, N_TRN),
-        'w_noise_ctx' : w_input_aone,
+        'w_noise_ctx_ex' : w_input_aone_ex,
+        'w_noise_ctx_in' : w_input_aone_in,
         'nuX_aone' : nuX_aone * nEA1 * 0.1,
         #'wMGN' : wMGN,
         #'nuX_stim' : nuX_stim

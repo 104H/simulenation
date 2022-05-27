@@ -26,16 +26,35 @@ class spikesandparams:
         self.spikeobj = spikeobj
         self.metrics = metrics
         self.calcium = { 'eA1' : [], 'iA1' : [] }
-        self.connectivity = { 'eA1' : [], 'iA1' : [] }
+        self.connectivity = {
+                "z" : {
+                    "Den" : {
+                            "ex" : { 'eA1' : [], 'iA1' : [] },
+                            "in" : { 'eA1' : [], 'iA1' : [] }
+                            },
+                    "Axon" : {
+                            "ex" : { 'eA1' : [], 'iA1' : [] },
+                            "in" : { 'eA1' : [], 'iA1' : [] }
+                            }
+                    },
+                "z_connected" : {
+                    "Den" : {
+                            "ex" : { 'eA1' : [], 'iA1' : [] },
+                            "in" : { 'eA1' : [], 'iA1' : [] }
+                            },
+                    "Axon" : {
+                            "ex" : { 'eA1' : [], 'iA1' : [] },
+                            "in" : { 'eA1' : [], 'iA1' : [] }
+                            }
+                    }
+                }
 
-def record_ca(population):
+def record_ca (population):
         return np.mean(population.nodes.Ca)
 
-def record_connectivity(population, synType):
-        t = "ex" if synType == "excitatory" else "in"
-
+def record_connectivity (population, connType, synType, metric):
         syn_elems_e = nest.GetStatus(population.nodes, 'synaptic_elements')
-        return sum(neuron['Axon_' + t]['z_connected'] for neuron in syn_elems_e)
+        return np.mean(list(neuron[connType + '_' + synType][metric] for neuron in syn_elems_e))
 
 def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     nest.ResetKernel()
@@ -86,7 +105,7 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     nest.SetStatus(topology_snn.find_population('iA1').nodes, 'synaptic_elements', synaptic_elements_i)
 
     # connect network
-    NESTConnector(source_network=topology_snn, target_network=topology_snn, connection_parameters=parameters.connection_pars)
+    #NESTConnector(source_network=topology_snn, target_network=topology_snn, connection_parameters=parameters.connection_pars)
 
     ''' Thalamus Removed
     # possion generator
@@ -97,15 +116,15 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     '''
 
     pg_aone = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_aone})
-    nest.Connect(pg_aone, topology_snn.find_population('eA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx})
-    nest.Connect(pg_aone, topology_snn.find_population('iA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx})
+    nest.Connect(pg_aone, topology_snn.find_population('eA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx_ex})
+    nest.Connect(pg_aone, topology_snn.find_population('iA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx_in})
 
     nest.structural_plasticity_update_interval = 100.
 
     nest.CopyModel('static_synapse', 'synapse_ex')
-    nest.SetDefaults('synapse_ex', {'weight': 585.0, 'delay': .1})
+    nest.SetDefaults('synapse_ex', {'weight': 1., 'delay': .1}) # add w_aone
     nest.CopyModel('static_synapse', 'synapse_in')
-    nest.SetDefaults('synapse_in', {'weight': -585.0, 'delay': .1})
+    nest.SetDefaults('synapse_in', {'weight': -1.0, 'delay': .1})
     nest.structural_plasticity_synapses = {
             'synapse_ex': {
                 'synapse_model': 'synapse_ex',
@@ -130,15 +149,22 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
 
     o = spikesandparams(parameters.label, None, None)
 
-    record_interval = 50.
-    for _ in np.arange(0., 5000., record_interval):
+    record_interval = 25000.
+    #for _ in np.arange(0., record_interval, record_interval-1):
+    for _ in np.arange(0., 100000., record_interval):
             nest.Simulate(record_interval)
 
             o.calcium['eA1'].append( record_ca(topology_snn.find_population('eA1')) )
             o.calcium['iA1'].append( record_ca(topology_snn.find_population('iA1')) )
 
-            o.connectivity['eA1'].append( record_connectivity(topology_snn.find_population('eA1'), "excitatory") )
-            o.connectivity['iA1'].append( record_connectivity(topology_snn.find_population('iA1'), "inhibitory") )
+            for z in ['z_connected', 'z']:
+                for c in ['Axon', 'Den']:
+                    for t in ['ex', 'in']:
+                        for p in ['eA1', 'iA1']:
+                            try:
+                                o.connectivity[z][c][t][p].append( record_connectivity(topology_snn.find_population(p), c, t, z) ) 
+                            except:
+                                pass
 
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
 
