@@ -59,6 +59,8 @@ def record_connectivity (population, connType, synType, metric):
 def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     nest.ResetKernel()
 
+    nest.EnableStructuralPlasticity()
+
     # ############################ SYSTEM
     # experiments parameters
     if not isinstance(parameters, ParameterSet):
@@ -67,8 +69,9 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     storage_paths = set_storage_locations(parameters.kernel_pars.data_path, parameters.kernel_pars.data_prefix,
                                           parameters.label, save=save)
     # set kernel parameters after reset
+    parameters.kernel_pars['local_num_threads'] = 1 # can't run plasticity with multiple threads
+    print(extract_nestvalid_dict(parameters.kernel_pars.as_dict(), param_type='kernel'))
     nest.SetKernelStatus(extract_nestvalid_dict(parameters.kernel_pars.as_dict(), param_type='kernel'))
-    nest.local_num_threads = 1 # can't run plasticity with multiple threads
 
     logger.update_log_handles(job_name=parameters.label, path=storage_paths['logs'])
 
@@ -82,7 +85,7 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     I_layer_properties = copy_dict(parameters.layer_pars, {'positions': pos_inh})
 
     spike_recorder = set_recording_device(start=0., stop=sys.float_info.max, resolution=parameters.kernel_pars.resolution,
-                                          record_to='memory', device_type='spike_recorder')
+                                          record_to='ascii', device_type='spike_recorder')
     spike_recorders = [spike_recorder for _ in parameters.net_pars.populations]
 
     topology_snn = SpikingNetwork(parameters.net_pars, label='AdEx with spatial topology',
@@ -145,28 +148,34 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     nest.Connect(ng, topology_snn.populations['TRN'].nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_stim})
     '''
 
-    nest.EnableStructuralPlasticity()
-
     o = spikesandparams(parameters.label, None, None)
 
-    record_interval = 25000.
+    record_interval = 5000.
     #for _ in np.arange(0., record_interval, record_interval-1):
-    for _ in np.arange(0., 100000., record_interval):
-            nest.Simulate(record_interval)
+    for _ in np.arange(0., 20000., record_interval):
+        nest.Simulate(record_interval)
 
-            o.calcium['eA1'].append( record_ca(topology_snn.find_population('eA1')) )
-            o.calcium['iA1'].append( record_ca(topology_snn.find_population('iA1')) )
+        o.calcium['eA1'].append( record_ca(topology_snn.find_population('eA1')) )
+        o.calcium['iA1'].append( record_ca(topology_snn.find_population('iA1')) )
 
-            for z in ['z_connected', 'z']:
-                for c in ['Axon', 'Den']:
-                    for t in ['ex', 'in']:
-                        for p in ['eA1', 'iA1']:
-                            try:
-                                o.connectivity[z][c][t][p].append( record_connectivity(topology_snn.find_population(p), c, t, z) ) 
-                            except:
-                                pass
+        for z in ['z_connected', 'z']:
+            for c in ['Axon', 'Den']:
+                for t in ['ex', 'in']:
+                    for p in ['eA1', 'iA1']:
+                        try:
+                            o.connectivity[z][c][t][p].append( record_connectivity(topology_snn.find_population(p), c, t, z) ) 
+                        except:
+                            pass
 
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
+
+    ''' DUMP ALL POPULATIONS INTO A PICKLE FILE '''
+    o.spikeobj = dict( zip( topology_snn.population_names, [_.spiking_activity for _ in topology_snn.populations.values()] ) )
+
+    filepath = os.path.join(storage_paths['activity'], f'spk_{parameters.label}')
+
+    with open(filepath, 'wb') as f:
+        pickle.dump(o, f)
 
     ''' Pearson Coeff Not Needed Now
     # temp spike objects to not include the first second in the computation
@@ -184,12 +193,4 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
 
     print(precomputed, flush=True)
     '''
-
-    ''' DUMP ALL POPULATIONS INTO A PICKLE FILE '''
-    o.spikeobj = dict( zip( topology_snn.population_names, [_.spiking_activity for _ in topology_snn.populations.values()] ) )
-
-    filepath = os.path.join(storage_paths['activity'], f'spk_{parameters.label}')
-
-    with open(filepath, 'wb') as f:
-        pickle.dump(o, f)
 

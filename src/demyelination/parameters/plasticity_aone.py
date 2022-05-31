@@ -25,16 +25,15 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 ParameterRange = {
         'T' : [0],
         #'eCa' : np.arange(0.2, 2., 0.4),
-        'eCa' : [0.1],
+        'eCa' : [.1],
         #'iCa' : np.arange(0.2, .6, 0.2),
-        'iCa' : [0.1],
+        'iCa' : [.1],
 }
 
 
 ################################
 def build_parameters(T, eCa, iCa):
-    system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=6, mem=512000)
-    # system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=32, mem=64000, queue="blaustein,hamstein")
+    system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=2, mem=512000)
 
     # ############################################################
     # Simulation parameters
@@ -52,7 +51,7 @@ def build_parameters(T, eCa, iCa):
     wX_TRN = 0.05
     '''
 
-    nuX_aone = 10. # used to be 10.
+    nuX_aone = .1 # used to be 10.
     gamma_aone = 10.
     w_aone = .5
 
@@ -228,7 +227,8 @@ def build_parameters(T, eCa, iCa):
         #'conn_specs': [conn_exc_aone, conn_exc_aone, conn_inh_aone, conn_inh_aone,
         'conn_specs': [None, None, None, None,
                         ],
-        'syn_specs': [syn_exc_aone, syn_exc_aone, syn_inh_aone, syn_inh_aone,
+        #'syn_specs': [syn_exc_aone, syn_exc_aone, syn_inh_aone, syn_inh_aone,
+        'syn_specs': [None, None, None, None,
                       ]
     }
 
