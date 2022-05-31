@@ -37,7 +37,7 @@ def set_system_parameters(cluster, queue='batch', walltime='00-24:00:00', nodes=
         system = dict(
             nodes=1,  # number of nodes
             ppn=ppn,  # number of cores / node (max 20) used to be 16
-            num_processes=ppn,
+            # num_processes=ppn,
             local_num_threads=1,  # ensure there's 1 thread for each virtual process
             walltime='01-00:00:00',
             queue='batch')

@@ -58,7 +58,6 @@ def record_connectivity (population, connType, synType, metric):
 
 def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     nest.ResetKernel()
-
     nest.EnableStructuralPlasticity()
 
     # ############################ SYSTEM
@@ -72,6 +71,8 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     parameters.kernel_pars['local_num_threads'] = 1 # can't run plasticity with multiple threads
     print(extract_nestvalid_dict(parameters.kernel_pars.as_dict(), param_type='kernel'))
     nest.SetKernelStatus(extract_nestvalid_dict(parameters.kernel_pars.as_dict(), param_type='kernel'))
+    print(nest.GetKernelStatus(['local_num_threads', 'num_processes', 'total_num_virtual_procs']))
+    exit()
 
     logger.update_log_handles(job_name=parameters.label, path=storage_paths['logs'])
 

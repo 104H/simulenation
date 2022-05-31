@@ -33,7 +33,7 @@ ParameterRange = {
 
 ################################
 def build_parameters(T, eCa, iCa):
-    system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=2, mem=512000)
+    system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=4, mem=512000)
 
     # ############################################################
     # Simulation parameters
