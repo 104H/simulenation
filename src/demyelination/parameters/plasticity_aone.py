@@ -33,12 +33,11 @@ ParameterRange = {
 
 ################################
 def build_parameters(T, eCa, iCa):
-    system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=4, mem=512000)
+    system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=8, mem=512000)
 
     # ############################################################
     # Simulation parameters
     resolution = .1
-    print(paths)
     kernel_pars = set_kernel_defaults(resolution=resolution, run_type=system_label, data_label=experiment_label,
                                       data_paths=paths, **system_params)
 
@@ -52,12 +51,13 @@ def build_parameters(T, eCa, iCa):
     wX_TRN = 0.05
     '''
 
-    nuX_aone = .1 # used to be 10.
-    gamma_aone = 10.
-    w_aone = .5
+    nuX_aone = 10.*50 # this gives ~3Hz
+    #nuX_aone = 1. # used to be 10.
+    #gamma_aone = 10.
+    #w_aone = .5
 
-    w_input_aone_ex = 15. # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
-    w_input_aone_in = 25. # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
+    w_input_aone_ex = .3 # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
+    w_input_aone_in = .3 # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
     #w_ctx_trn = 0.08
     #w_ctx_mgn = 0.04
     #w_mgn_ctx = 0.5
@@ -65,8 +65,8 @@ def build_parameters(T, eCa, iCa):
     # Specify network parameters
     #N_MGN = 1000
     #N_TRN = 1000
-    nEA1 = 20
-    nIA1 = 5
+    nEA1 = 200
+    nIA1 = 50
 
     # synapse parameters
     #w_input_th = 0.9  # excitatory synaptic weight of background noise onto thalamus (mV)
@@ -123,7 +123,7 @@ def build_parameters(T, eCa, iCa):
     # Plasticity Parameters
     update_interval = 1000
 
-    gr_scaling = 0.0001
+    gr_scaling = .0001
     # Excitatory synaptic elements of excitatory neurons
     growth_curve_e_e = {
         'growth_curve': "gaussian",
@@ -177,13 +177,13 @@ def build_parameters(T, eCa, iCa):
         ]
     }
 
+    '''
     # for simplicity all other parameters are the same, only topology is added
     # TODO we may use this later, but not now
     layer_properties = {'extent': [2500., 1000.], 'elements': neuron_params_aone['model']}
 
     # Connectivity
     epsilon_aone = 0.1
-    '''
     epsilon_th = 0.01
     epsilon_mgn_ctx = 0.05  # TODO look up literature ?
     epsilon_ctx_trn = 0.03  # TODO look up literature ?
@@ -199,7 +199,6 @@ def build_parameters(T, eCa, iCa):
     # I synapses
     syn_inh_mgn = {'synapse_model': 'static_synapse', 'delay': d, 'weight': - gamma_th * wMGN}
     conn_inh_mgn = {'rule': 'pairwise_bernoulli', 'p': epsilon_th}
-    '''
 
     syn_inh_aone = {'synapse_model': 'static_synapse', 'delay': d, 'weight': - gamma_aone * w_aone}
     conn_inh_aone = {'rule': 'pairwise_bernoulli', 'p': epsilon_aone}
@@ -207,7 +206,6 @@ def build_parameters(T, eCa, iCa):
     syn_exc_aone = {'synapse_model': 'static_synapse', 'delay': d, 'weight': w_aone}
     conn_exc_aone = {'rule': 'pairwise_bernoulli', 'p': epsilon_aone}
 
-    '''
     # thalamocortical projections: to both eA1 and iA1
     syn_exc_mgn_ctx = {'synapse_model': 'static_synapse', 'delay': d, 'weight': w_mgn_ctx}
     conn_exc_mgn_ctx = {'rule': 'pairwise_bernoulli', 'p': epsilon_mgn_ctx}
@@ -250,7 +248,7 @@ def build_parameters(T, eCa, iCa):
     return dict([('kernel_pars', kernel_pars),
                  ('net_pars', snn_parameters),
                  ('connection_pars', topology_snn_synapses),
-                 ('layer_pars', layer_properties),
+                 #('layer_pars', layer_properties),
                  ('noise_pars', noise_pars),
                  ('growth_pars', growth_curves)
     ])

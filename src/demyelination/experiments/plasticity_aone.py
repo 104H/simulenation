@@ -54,12 +54,11 @@ def record_ca (population):
         return np.mean(ca)
 
 def record_connectivity (population, connType, synType, metric):
-        syn_elems_e = nest.GetStatus(population.nodes, 'synaptic_elements')
-        return np.mean(list(neuron[connType + '_' + synType][metric] for neuron in syn_elems_e))
+        syn_elems = population.nodes.synaptic_elements
+        return np.sum(list(neuron[connType + '_' + synType][metric] for neuron in syn_elems if neuron != None))
 
 def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     nest.ResetKernel()
-    nest.EnableStructuralPlasticity()
 
     # ############################ SYSTEM
     # experiments parameters
@@ -75,21 +74,23 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
 
     logger.update_log_handles(job_name=parameters.label, path=storage_paths['logs'])
 
+    '''
     # now we build the network
     pos_exc = set_positions(N=parameters.net_pars.population_size[0], dim=2, topology='random',
                             specs=parameters.layer_pars)
     pos_inh = set_positions(N=parameters.net_pars.population_size[1], dim=2, topology='random',
                             specs=parameters.layer_pars)
 
-    E_layer_properties = copy_dict(parameters.layer_pars, {'positions': pos_exc})
-    I_layer_properties = copy_dict(parameters.layer_pars, {'positions': pos_inh})
+    #E_layer_properties = copy_dict(parameters.layer_pars, {'positions': pos_exc})
+    #I_layer_properties = copy_dict(parameters.layer_pars, {'positions': pos_inh})
+    '''
 
     spike_recorder = set_recording_device(start=0., stop=sys.float_info.max, resolution=parameters.kernel_pars.resolution,
-                                          record_to='ascii', device_type='spike_recorder')
+                                          record_to='memory', device_type='spike_recorder')
     spike_recorders = [spike_recorder for _ in parameters.net_pars.populations]
 
     topology_snn = SpikingNetwork(parameters.net_pars, label='AdEx with spatial topology',
-                                  topologies=[E_layer_properties, I_layer_properties],
+                                  #topologies=[E_layer_properties, I_layer_properties],
                                   spike_recorders=spike_recorders)
 
     synaptic_elements = {
@@ -122,7 +123,7 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     nest.Connect(pg_aone, topology_snn.find_population('eA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx_ex})
     nest.Connect(pg_aone, topology_snn.find_population('iA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx_in})
 
-    nest.structural_plasticity_update_interval = 100.
+    #nest.structural_plasticity_update_interval = 100.
 
     nest.CopyModel('static_synapse', 'synapse_ex')
     nest.SetDefaults('synapse_ex', {'weight': 1., 'delay': .1}) # add w_aone
@@ -150,9 +151,10 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
 
     o = spikesandparams(parameters.label, None, None)
 
-    record_interval = 5000.
-    #for _ in np.arange(0., record_interval, record_interval-1):
-    for _ in np.arange(0., 20000., record_interval):
+    nest.EnableStructuralPlasticity()
+
+    record_interval = 10000.
+    for _ in np.arange(0., 150000., record_interval):
         nest.Simulate(record_interval)
 
         o.calcium['eA1'].append( record_ca(topology_snn.find_population('eA1')) )
@@ -166,7 +168,7 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
                             o.connectivity[z][c][t][p].append( record_connectivity(topology_snn.find_population(p), c, t, z) ) 
                         except:
                             pass
-
+        
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
 
     ''' DUMP ALL POPULATIONS INTO A PICKLE FILE '''
