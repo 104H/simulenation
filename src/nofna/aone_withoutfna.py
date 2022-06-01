@@ -64,8 +64,8 @@ class StructralPlasticityExample:
         self.t_sim = 100000.0
         # simulation step (ms).
         self.dt = 0.1
-        self.number_excitatory_neurons = 40
-        self.number_inhibitory_neurons = 10
+        self.number_excitatory_neurons = 4
+        self.number_inhibitory_neurons = 4
 
         # Structural_plasticity properties
         self.update_interval = 10000.0

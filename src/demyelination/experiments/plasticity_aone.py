@@ -50,7 +50,8 @@ class spikesandparams:
                 }
 
 def record_ca (population):
-        return np.mean(population.nodes.Ca)
+        ca = [c for c in population.nodes.Ca if c != None]
+        return np.mean(ca)
 
 def record_connectivity (population, connType, synType, metric):
         syn_elems_e = nest.GetStatus(population.nodes, 'synaptic_elements')
@@ -69,10 +70,8 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
                                           parameters.label, save=save)
     # set kernel parameters after reset
     parameters.kernel_pars['local_num_threads'] = 1 # can't run plasticity with multiple threads
-    print(extract_nestvalid_dict(parameters.kernel_pars.as_dict(), param_type='kernel'))
+    parameters.kernel_pars['data_path'] = storage_paths['other'] # store the spikerecorder readings to the other folder
     nest.SetKernelStatus(extract_nestvalid_dict(parameters.kernel_pars.as_dict(), param_type='kernel'))
-    print(nest.GetKernelStatus(['local_num_threads', 'num_processes', 'total_num_virtual_procs']))
-    exit()
 
     logger.update_log_handles(job_name=parameters.label, path=storage_paths['logs'])
 
@@ -173,7 +172,8 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     ''' DUMP ALL POPULATIONS INTO A PICKLE FILE '''
     o.spikeobj = dict( zip( topology_snn.population_names, [_.spiking_activity for _ in topology_snn.populations.values()] ) )
 
-    filepath = os.path.join(storage_paths['activity'], f'spk_{parameters.label}')
+    rank = str(nest.Rank())
+    filepath = os.path.join(storage_paths['activity'], f'spk_{parameters.label}_{rank}')
 
     with open(filepath, 'wb') as f:
         pickle.dump(o, f)

@@ -38,6 +38,7 @@ def build_parameters(T, eCa, iCa):
     # ############################################################
     # Simulation parameters
     resolution = .1
+    print(paths)
     kernel_pars = set_kernel_defaults(resolution=resolution, run_type=system_label, data_label=experiment_label,
                                       data_paths=paths, **system_params)
 
@@ -64,8 +65,8 @@ def build_parameters(T, eCa, iCa):
     # Specify network parameters
     #N_MGN = 1000
     #N_TRN = 1000
-    nEA1 = 2000
-    nIA1 = 500
+    nEA1 = 20
+    nIA1 = 5
 
     # synapse parameters
     #w_input_th = 0.9  # excitatory synaptic weight of background noise onto thalamus (mV)
