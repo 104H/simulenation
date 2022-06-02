@@ -25,9 +25,9 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 ParameterRange = {
         'T' : [0],
         #'eCa' : np.arange(0.2, 2., 0.4),
-        'eCa' : [.1],
+        'eCa' : [.4],
         #'iCa' : np.arange(0.2, .6, 0.2),
-        'iCa' : [.1],
+        'iCa' : [.4],
 }
 
 
@@ -51,13 +51,13 @@ def build_parameters(T, eCa, iCa):
     wX_TRN = 0.05
     '''
 
-    nuX_aone = 10.*50 # this gives ~3Hz
+    nuX_aone = 6.*50 # this gives ~3Hz
     #nuX_aone = 1. # used to be 10.
     #gamma_aone = 10.
     #w_aone = .5
 
-    w_input_aone_ex = .3 # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
-    w_input_aone_in = .3 # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
+    w_input_aone_ex = 50. # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
+    w_input_aone_in = 50. # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
     #w_ctx_trn = 0.08
     #w_ctx_mgn = 0.04
     #w_mgn_ctx = 0.5
@@ -65,8 +65,8 @@ def build_parameters(T, eCa, iCa):
     # Specify network parameters
     #N_MGN = 1000
     #N_TRN = 1000
-    nEA1 = 200
-    nIA1 = 50
+    nEA1 = 2000
+    nIA1 = 500
 
     # synapse parameters
     #w_input_th = 0.9  # excitatory synaptic weight of background noise onto thalamus (mV)
@@ -86,6 +86,8 @@ def build_parameters(T, eCa, iCa):
         "a": 2.,
         "b": 60.,
         'tau_w': 200.,
+
+        "beta_Ca" : 0.0001
     }
     '''
     neuron_params_aone = {
@@ -124,6 +126,7 @@ def build_parameters(T, eCa, iCa):
     update_interval = 1000
 
     gr_scaling = .0001
+    #g_curve = 'linear'
     # Excitatory synaptic elements of excitatory neurons
     growth_curve_e_e = {
         'growth_curve': "gaussian",
@@ -239,7 +242,8 @@ def build_parameters(T, eCa, iCa):
         #'w_noise_trn': np.random.lognormal(w_input_th * wX_TRN, np.sqrt(w_input_th * wX_TRN) * sigma_TRN, N_TRN),
         'w_noise_ctx_ex' : w_input_aone_ex,
         'w_noise_ctx_in' : w_input_aone_in,
-        'nuX_aone' : nuX_aone * nEA1 * 0.1,
+        #'nuX_aone' : nuX_aone * nEA1 * 0.1,
+        'nuX_aone' : 100,
         #'wMGN' : wMGN,
         #'nuX_stim' : nuX_stim
     }
