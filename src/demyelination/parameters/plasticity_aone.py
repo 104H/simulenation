@@ -23,11 +23,11 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 
 # ################################
 ParameterRange = {
-        'T' : [0],
+        'T' : [1],
         #'eCa' : np.arange(0.2, 2., 0.4),
-        'eCa' : [.4],
+        'eCa' : [.02],
         #'iCa' : np.arange(0.2, .6, 0.2),
-        'iCa' : [.4],
+        'iCa' : [.02],
 }
 
 
@@ -51,13 +51,13 @@ def build_parameters(T, eCa, iCa):
     wX_TRN = 0.05
     '''
 
-    nuX_aone = 6.*50 # this gives ~3Hz
+    nuX_aone = 2. # this gives ~3Hz
     #nuX_aone = 1. # used to be 10.
-    #gamma_aone = 10.
+    #gamma_aone = 7.
     #w_aone = .5
 
-    w_input_aone_ex = 50. # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
-    w_input_aone_in = 50. # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
+    w_input_aone_ex = 1. # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
+    w_input_aone_in = 1. # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
     #w_ctx_trn = 0.08
     #w_ctx_mgn = 0.04
     #w_mgn_ctx = 0.5
@@ -123,14 +123,23 @@ def build_parameters(T, eCa, iCa):
     '''
 
     # Plasticity Parameters
-    update_interval = 1000
+    update_interval = 100.
 
     gr_scaling = .0001
     #g_curve = 'linear'
     # Excitatory synaptic elements of excitatory neurons
+    growth_curve_e_e_den = {
+        'growth_curve': "gaussian",
+        'growth_rate': 4 * gr_scaling,  # (elements/ms)
+        'continuous': False,
+        'eta': 0.0,  # Ca2+
+        'eps': eCa,  # Ca2+
+    }
+
+   # Excitatory synaptic elements of excitatory neurons
     growth_curve_e_e = {
         'growth_curve': "gaussian",
-        'growth_rate': 1 * gr_scaling,  # (elements/ms)
+        'growth_rate': 3 * gr_scaling,  # (elements/ms)
         'continuous': False,
         'eta': 0.0,  # Ca2+
         'eps': eCa,  # Ca2+
@@ -148,7 +157,7 @@ def build_parameters(T, eCa, iCa):
     # Excitatory synaptic elements of inhibitory neurons
     growth_curve_i_e = {
         'growth_curve': "gaussian",
-        'growth_rate': 4 * gr_scaling,  # (elements/ms)
+        'growth_rate': 3 * gr_scaling,  # (elements/ms)
         'continuous': False,
         'eta': 0.0,  # Ca2+
         'eps': iCa,  # Ca2+
@@ -164,6 +173,7 @@ def build_parameters(T, eCa, iCa):
     }
 
     growth_curves = {
+                'growth_curve_e_e_den' : growth_curve_e_e_den,
                 'growth_curve_e_e' : growth_curve_e_e,
                 'growth_curve_e_i' : growth_curve_e_i,
                 'growth_curve_i_e' : growth_curve_i_e,
@@ -242,8 +252,7 @@ def build_parameters(T, eCa, iCa):
         #'w_noise_trn': np.random.lognormal(w_input_th * wX_TRN, np.sqrt(w_input_th * wX_TRN) * sigma_TRN, N_TRN),
         'w_noise_ctx_ex' : w_input_aone_ex,
         'w_noise_ctx_in' : w_input_aone_in,
-        #'nuX_aone' : nuX_aone * nEA1 * 0.1,
-        'nuX_aone' : 100,
+        'nuX_aone' : nuX_aone * nEA1 * 0.1,
         #'wMGN' : wMGN,
         #'nuX_stim' : nuX_stim
     }

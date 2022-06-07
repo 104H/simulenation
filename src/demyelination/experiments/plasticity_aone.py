@@ -126,7 +126,7 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     #nest.structural_plasticity_update_interval = 100.
 
     nest.CopyModel('static_synapse', 'synapse_ex')
-    nest.SetDefaults('synapse_ex', {'weight': 3., 'delay': .1}) # add w_aone
+    nest.SetDefaults('synapse_ex', {'weight': .5, 'delay': .1}) # add w_aone
     nest.CopyModel('static_synapse', 'synapse_in')
     nest.SetDefaults('synapse_in', {'weight': -1.0, 'delay': .1})
     nest.structural_plasticity_synapses = {
@@ -157,7 +157,7 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     rank = str(nest.Rank())
     filepath = os.path.join(storage_paths['activity'], f'spk_{parameters.label}_{rank}')
 
-    record_interval = 10000.
+    record_interval = 20000.
     for _ in np.arange(0., 200000., record_interval):
         nest.Simulate(record_interval)
 
@@ -173,10 +173,8 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
                         except:
                             pass
 
-        ''' # saving ca and connection data after every record interval
-        with open(filepath, 'wb') as f:
-            pickle.dump(o, f)
-        '''
+        #with open(filepath, 'wb') as f:
+        #    pickle.dump(o, f)
         
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
 
