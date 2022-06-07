@@ -72,23 +72,54 @@ def build_parameters(T, eCa, iCa):
     #w_input_th = 0.9  # excitatory synaptic weight of background noise onto thalamus (mV)
     d = 1.5  # synaptic transmission delay (ms)
 
-    neuron_params_aone = {
-        'model': 'aeif_cond_exp',
-        'E_L': -70.,  # resting membrane potential (mV)
-        'C_m': 150.0,  # membrane capacity (pF)
-        'g_L': 10.0,  # leak conductance  - in combo with C_m you get tau_m = ~15 ms
-        'V_reset': -60.,  # reset membrane potential after a spike (mV)
-        'V_th': -55.,  # spike threshold (mV)
-        'tau_syn_ex': 5.,  # exc. synaptic time constant
-        'tau_syn_in': 10.,  # exc. synaptic time constant
+    # previously
+    # neuron_params_aone = {
+    #     'model': 'aeif_cond_exp',
+    #     'E_L': -70.,  # resting membrane potential (mV)
+    #     'C_m': 150.0,  # membrane capacity (pF)
+    #     'g_L': 10.0,  # leak conductance  - in combo with C_m you get tau_m = ~15 ms
+    #     'V_reset': -60.,  # reset membrane potential after a spike (mV)
+    #     'V_th': -55.,  # spike threshold (mV)
+    #     'tau_syn_ex': 5.,  # exc. synaptic time constant
+    #     'tau_syn_in': 10.,  # exc. synaptic time constant
+    #
+    #     # initial burst + adaptation
+    #     "a": 2.,
+    #     "b": 60.,
+    #     'tau_w': 200.,
+    #
+    #     "beta_Ca" : 0.0001
+    # }
 
-        # initial burst + adaptation
+    # according to RS neuron parameters in Destexhe, A. (2009). https://doi.org/10.1007/s10827-009-0164-4
+    # with "strong adaptation"
+    neuron_exc_params_aone = {
         "a": 2.,
-        "b": 60.,
-        'tau_w': 200.,
+        "b": 40.,
+        'tau_w': 150.,
 
-        "beta_Ca" : 0.0001
+        'C_m': 150.,
+        'g_L': 10.,
+        'V_reset': -60.,
+        'V_th': -50.,
+        'E_L': -70.,
+        'V_m': -60.,
     }
+
+    # according to fast-spiking inh neuron parameters in Destexhe, A. (2009). https://doi.org/10.1007/s10827-009-0164-4
+    neuron_inh_params_aone = {
+        "a": 2.,
+        "b": 0.,            # no spike-based adaptation
+        'tau_w': 600.,
+
+        'C_m': 150.,
+        'g_L': 10.,
+        'V_reset': -60.,
+        'V_th': -50.,
+        'E_L': -70.,  # this is changed
+        'V_m': -60.,
+    }
+
     '''
     neuron_params_aone = {
             'tau_m': 10.0,  # membrane time constant (ms)
@@ -183,10 +214,10 @@ def build_parameters(T, eCa, iCa):
     snn_parameters = {
     'populations': ['eA1', 'iA1'],
     'population_size': [nEA1, nIA1],
-    'neurons': [neuron_params_aone, neuron_params_aone],
+    'neurons': [neuron_exc_params_aone, neuron_inh_params_aone],
     'randomize': [
-        {'V_m': (np.random.uniform, {'low': neuron_params_aone['E_L'], 'high': neuron_params_aone['V_th']})},
-        {'V_m': (np.random.uniform, {'low': neuron_params_aone['E_L'], 'high': neuron_params_aone['V_th']})},
+        {'V_m': (np.random.uniform, {'low': neuron_exc_params_aone['E_L'], 'high': neuron_exc_params_aone['V_th']})},
+        {'V_m': (np.random.uniform, {'low': neuron_inh_params_aone['E_L'], 'high': neuron_inh_params_aone['V_th']})},
         ]
     }
 
