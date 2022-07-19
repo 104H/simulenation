@@ -1,6 +1,7 @@
 """
-June 30, 2022
-An approch of achieving a certain level of epsp. (First Approach) The specific values are here: https://iffchat.fz-juelich.de/files/p1xzrspik3fpxjmjeeom5nmt4y/public?h=X7Jj9kQNKD2Z_bDN8NQkis3197RSCPXxusjNmUMfji4
+July 11, 2022
+
+Stimulating the MGN for 100ms to reproduce results as seen in Cerina.
 """
 
 import numpy as np

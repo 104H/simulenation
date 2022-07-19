@@ -1,6 +1,8 @@
 """
-June 30, 2022
-An approch of achieving a certain level of epsp. (First Approach) The specific values are here: https://iffchat.fz-juelich.de/files/p1xzrspik3fpxjmjeeom5nmt4y/public?h=X7Jj9kQNKD2Z_bDN8NQkis3197RSCPXxusjNmUMfji4
+July 18, 2022
+
+A combination of the findings from experiments for different coupling the the CTX (mgnstim-weakaone.py) and the THL (mgnstim-weakcoupling.py)
+A higher gamma value is explored in both cases.
 """
 
 import numpy as np

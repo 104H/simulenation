@@ -1,6 +1,7 @@
 """
-June 30, 2022
-An approch of achieving a certain level of epsp. (First Approach) The specific values are here: https://iffchat.fz-juelich.de/files/p1xzrspik3fpxjmjeeom5nmt4y/public?h=X7Jj9kQNKD2Z_bDN8NQkis3197RSCPXxusjNmUMfji4
+July 18, 2022
+
+A different connection strength in the THL to address oscillations.
 """
 
 import numpy as np
