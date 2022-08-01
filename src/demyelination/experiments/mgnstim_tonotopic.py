@@ -90,8 +90,8 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
                 parameters.connection_pars.syn_specs[6])
         nest.Connect(topology_snn.find_population('eA1').nodes[i*4 : (i*4)+399], \
                 topology_snn.find_population('MGN').nodes[i : i+99], \
-                parameters.connection_pars.conn_specs[7], \
-                parameters.connection_pars.syn_specs[7])
+                parameters.ctx_mgn_pars.conn, \
+                parameters.ctx_mgn_pars.syn)
     #'''
 
     #''' Stimulus generator removed for now
