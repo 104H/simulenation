@@ -27,7 +27,7 @@ from utils.system import set_system_parameters
 # experiments parameters
 project_label = 'demyelination'
 
-experiment_label = 'destexhe-scaleup-tonotopic-grownconn'
+experiment_label = 'destexhe-tonotopic-cadist-allconn'
 
  ######################################################################################
 # system parameters
@@ -49,6 +49,7 @@ ParameterRange = {
 '''
 ParameterRange = {
     # "gamma": np.arange(10, 11, 1),
+    #"T" : np.arange(1),
     "b": [5.],
     "nu_x": [4.],
     "w_exc" : [4.],
@@ -94,9 +95,9 @@ def build_parameters(b, nu_x, w_exc, nuX_stim, w_th_stimscale):
     epsilon_th = epsilon / thl_increase_scale
     epsilon_aone = epsilon / ctx_increase_scale
 
-    epsilon_mgn_ctx = epsilon / ctx_increase_scale * 0
-    epsilon_ctx_trn = epsilon / thl_increase_scale * 0
-    epsilon_ctx_mgn = epsilon / thl_increase_scale * 0
+    epsilon_mgn_ctx = epsilon / ctx_increase_scale
+    epsilon_ctx_trn = epsilon / thl_increase_scale
+    epsilon_ctx_mgn = epsilon / thl_increase_scale
 
     stim_amplitude = nu_x
     nuX_th = stim_amplitude * (nMGN * epsilon_th)
@@ -105,8 +106,8 @@ def build_parameters(b, nu_x, w_exc, nuX_stim, w_th_stimscale):
 
     # we set epsilon for recurrent conn to 0 because the conn will be loaded
     # this is intentionaly done here because epsilon is used in the computation of nux above
-    epsilon_th = 0
-    epsilon_aone = 0
+    #epsilon_th = 0
+    #epsilon_aone = 0
 
     #w_exc = 6. # excitatory weight
 
@@ -303,6 +304,7 @@ def build_parameters(b, nu_x, w_exc, nuX_stim, w_th_stimscale):
 
     conn_inh_aone = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': epsilon_aone}
 
+    conn_exc_aone_recurrant = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': 0}
     conn_exc_aone = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': epsilon_aone}
 
     # thalamocortical projections: to both eA1 and iA1
@@ -326,6 +328,7 @@ def build_parameters(b, nu_x, w_exc, nuX_stim, w_th_stimscale):
                                 ('TRN', 'eA1'),  # cortico-thalamic
                                 ],
         'weight_matrix': [None, None, None,
+                        #None,
                         None, None, None,
                         #None,
                         None,
@@ -333,7 +336,7 @@ def build_parameters(b, nu_x, w_exc, nuX_stim, w_th_stimscale):
                         None
                             ],
         'conn_specs': [conn_intra_trn, conn_inh_mgn, conn_exc_mgn,
-                        #conn_exc_aone,
+                        #conn_exc_aone_recurrant,
                         conn_exc_aone, conn_inh_aone, conn_inh_aone,
                         #conn_exc_mgn_ctx,
                         conn_exc_mgn_ctx,

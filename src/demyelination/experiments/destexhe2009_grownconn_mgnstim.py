@@ -34,16 +34,15 @@ class spikesandparams:
         self.spikeobj = spikeobj
         self.metrics = metrics
 
-def restore_network ():
+def restore_network (topology_snn):
     import pickle
 
     import pandas as pd
     df = pd.DataFrame()
 
-    #dump_filename = 'demyelination/data/destexhe-grow-fromzero-recur-ea1-fullcalc/other/net_'
-    dump_filename = 'demyelination/data/plasticity-debugging/other/net_'
+    dump_filename = 'demyelination/data/plasticity-cadist-allconn/other/180000.0_net_'
 
-    for threadid in range(8):
+    for threadid in range(1):
         with open(dump_filename + str(threadid), "rb") as f:
             network = pickle.load(f)
 
@@ -51,8 +50,30 @@ def restore_network ():
 
             df = pd.concat([df, net])
 
-    nest.Connect(df.source.values, df.target.values, "one_to_one",\
-            {"synapse_model" : "static_synapse", "delay" : df.delay.values, "weight" : df.weight})
+    #df = df[df.target != 2901]
+    #df = df[df.target != 2902]
+    #df = df[df.target != 2903]
+    #df = df[df.target != 2904]
+
+    #df = df[df.source != 2905]
+    #df = df[df.source != 2906]
+
+    tgt = df.target
+    src = df.source
+
+    nest.Connect(src, tgt, "one_to_one",\
+            {"synapse_model" : "static_synapse", "delay" : df.delay.values, "weight" : df.weight.values})
+
+def restore_network_state (topology_snn):
+    import pandas as pd
+    dump_filename = 'demyelination/data/destexhe-tonotopic-cadist-allconn/activity/spk_destexhe-tonotopic-cadist-allconn_T=0_0'
+    net_state = pd.read_pickle(dump_filename).neuron_states
+
+    for st in net_state:
+        topology_snn.populations[ st['population'] ].nodes[ st['id'] ].set(V_m = st['V_m'])
+        topology_snn.populations[ st['population'] ].nodes[ st['id'] ].set(g_ex = st['g_ex'])
+        topology_snn.populations[ st['population'] ].nodes[ st['id'] ].set(g_in = st['g_in'])
+        topology_snn.populations[ st['population'] ].nodes[ st['id'] ].set(w = st['w'])
 
 def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     print("[EXP FILE LOG]", parameters)
@@ -96,7 +117,7 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     #NESTConnector(source_network=topology_snn, target_network=topology_snn, connection_parameters=parameters.connection_pars)
 
     # possion generator
-    pg_th = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_th})
+    pg_th = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_th * 1})
 
     ''' No need to connect here. Connections are loaded.
     # can be done without a loop
@@ -105,15 +126,14 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
         nest.Connect(pg_th, topology_snn.find_population('TRN').nodes[idx], 'one_to_one', syn_spec={'weight': parameters.noise_pars.w_noise_trn})
     #'''
 
-    pg_aone = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_aone})
+    pg_aone = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_aone * 1})
     ''' No need to connect here. Connections are loaded.
     nest.Connect(pg_aone, topology_snn.find_population('eA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx})
     nest.Connect(pg_aone, topology_snn.find_population('iA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx})
     #'''
 
-    # read connections in the eA1 from files and set them up
-    restore_network()
-    
+    restore_network(topology_snn)
+
     ''' tonotopic MGN to eA1 connection
     # the populations of MGN and eA1 was split into 5 equally sized subpopulations
     # each was these was only connected to a corresponding subpopulation
@@ -137,8 +157,11 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     nest.Connect(ng, topology_snn.populations['MGN'].nodes[:39], 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_stim})
     #'''
 
-    nest.Simulate(5000.)
-    topology_snn.extract_activity(flush=False, t_start=0., t_stop=5000.)  # this reads out the recordings
+    restore_network_state (topology_snn)
+
+    sim_time = 5 * 1000.
+    nest.Simulate(sim_time )
+    topology_snn.extract_activity(flush=False, t_start=0., t_stop=sim_time)  # this reads out the recordings
 
     ''' DUMP ALL POPULATIONS INTO A PICKLE FILE '''
     activitylist = dict( zip( topology_snn.population_names, [_.spiking_activity for _ in topology_snn.populations.values()] ) )
