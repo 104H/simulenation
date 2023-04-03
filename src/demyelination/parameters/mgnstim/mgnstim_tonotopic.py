@@ -16,7 +16,7 @@ from utils.system import set_system_parameters
 # experiments parameters
 project_label = 'demyelination'
 
-experiment_label = 'mgn20hz-tonotopic'
+experiment_label = 'mgn-a1-weight'
 
  ######################################################################################
 # system parameters
@@ -28,14 +28,14 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 ParameterRange = {
         #'T' : np.arange(0, 1., 1.),
         #'nuX_stim' : [10., 13., 16., 20.],
-        'w_th_stimscale' : [13., 14., 16., 17.],
-        'scale_w' : np.arange(1., 21., 2.),
-        'stim_dur' : [100.]
+        'tono' : [1.],
+        'w_th_stimscale' : [13., 14., 15., 16., 17.],
+        'scale_w' : np.arange(1., 21., 1.)
 }
 
 
 ################################
-def build_parameters(w_th_stimscale, scale_w, stim_dur):
+def build_parameters(tono, w_th_stimscale, scale_w):
     system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=1, mem=512000)
 
     # ############################################################
@@ -44,7 +44,8 @@ def build_parameters(w_th_stimscale, scale_w, stim_dur):
     kernel_pars = set_kernel_defaults(resolution=resolution, run_type=system_label, data_label=experiment_label,
                                       data_paths=paths, **system_params)
 
-    nuX_stim = 50. / w_th_stimscale
+    nuX_stim = 80. / w_th_stimscale
+    stim_dur = 100.
 
     # Specify network parameters
     nMGN = 500
@@ -296,6 +297,7 @@ def build_parameters(w_th_stimscale, scale_w, stim_dur):
                  #('layer_pars', layer_properties),
                  ('noise_pars', noise_pars),
                  #('growth_pars', growth_curves),
-                 ('ctx_mgn_pars', {'conn' : conn_exc_mgn_ctx, 'syn' : syn_exc_mgn_ctx})
+                 ('mgn_ctx_pars', {'conn' : conn_exc_mgn_ctx, 'syn' : syn_exc_mgn_ctx}),
+                 ('ctx_mgn_pars', {'conn' : conn_exc_ctx_mgn, 'syn' : syn_exc_ctx_mgn})
     ])
 

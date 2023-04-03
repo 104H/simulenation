@@ -13,7 +13,7 @@ from utils.system import set_system_parameters
 # experiments parameters
 project_label = 'demyelination'
 
-experiment_label = 'adaptation-thl-burstprob'
+experiment_label = 'adaptation-thl-nobursthist'
 
  ######################################################################################
 # system parameters

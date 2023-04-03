@@ -16,7 +16,7 @@ from utils.system import set_system_parameters
 # experiments parameters
 project_label = 'demyelination'
 
-experiment_label = 'mgn20hz-highweight'
+experiment_label = 'mgn-a1-weight'
 
  ######################################################################################
 # system parameters
@@ -28,14 +28,14 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 ParameterRange = {
         #'T' : np.arange(0, 1., 1.),
         #'nuX_stim' : [10., 13., 16., 20.],
-        'w_th_stimscale' : [13., 14., 16., 17.],
-        'scale_w' : np.arange(15., 21., 1.),
-        'stim_dur' : [100., 200.]
+        'tono' : [0.],
+        'w_th_stimscale' : [13., 14., 15., 16., 17.],
+        'scale_w' : np.arange(1., 21., 1.)
 }
 
 
 ################################
-def build_parameters(w_th_stimscale, scale_w, stim_dur):
+def build_parameters(tono, w_th_stimscale, scale_w):
     system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=1, mem=512000)
 
     # ############################################################
@@ -45,6 +45,7 @@ def build_parameters(w_th_stimscale, scale_w, stim_dur):
                                       data_paths=paths, **system_params)
 
     nuX_stim = 80. / w_th_stimscale
+    stim_dur = 100.
 
     # Specify network parameters
     nMGN = 500

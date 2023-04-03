@@ -30,8 +30,7 @@ from utils.system import set_system_parameters
 # experiments parameters
 project_label = 'demyelination'
 
-#experiment_label = 'plasticity-cadist-allconn'
-experiment_label = 'destexhe-tonotopic-cadist-allconn'
+experiment_label = 'eaone-demy-5k'
 
  ######################################################################################
 # system parameters
@@ -45,13 +44,14 @@ ParameterRange = {
 
 ################################
 def build_parameters(T):
-    system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=1, mem=512000)
+    np_seed = 1
+    system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=4, mem=512000)
 
     # ############################################################
     # Simulation parameters
     resolution = .1
     kernel_pars = set_kernel_defaults(resolution=resolution, run_type=system_label, data_label=experiment_label,
-                                      data_paths=paths, **system_params)
+                                      np_seed=np_seed, data_paths=paths, **system_params)
 
     hetdelay_thl = 0
     hetdelay_ctx = 0
@@ -203,7 +203,7 @@ def build_parameters(T):
     eCa_levels = np.random.exponential(0.13, 2000) # target calium level = target activity / 100
 
     gr_scaling = .001
-    g_curve = 'linear'
+    g_curve = 'gaussian'
     # Excitatory synaptic elements of excitatory neurons
     growth_curve_e_e = []
 
@@ -212,7 +212,7 @@ def build_parameters(T):
             'growth_curve': g_curve,
             'growth_rate': 1 * gr_scaling,  # (elements/ms)
             'continuous': False,
-            #'eta': 0.0,  # Ca2+
+            'eta': 0.0,  # Ca2+
             'eps': eCa,  # Ca2+
         })
 
@@ -235,7 +235,7 @@ def build_parameters(T):
 
     # for simplicity all other parameters are the same, only topology is added
     # TODO we may use this later, but not now
-    #layer_properties = {'extent': [2500., 1000.], 'elements': neuron_params_aone['model']}
+    # layer_properties = {'extent': [2500., 1000.], 'elements': neuron_params_aone['model']}
 
     # E synapses
     # synapse_model is a bernoulli synapse https://nest-simulator.readthedocs.io/en/v2.20.1/models/static.html
@@ -258,8 +258,8 @@ def build_parameters(T):
 
     conn_inh_aone = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': epsilon_aone}
 
-    conn_exc_aone_to_iA1 = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': epsilon_aone}
     conn_exc_aone_intra_eA1 = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': epsilon_aone * ctx_epsilon_decrease}
+    conn_exc_aone_to_iA1 = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': epsilon_aone}
 
     # thalamocortical projections: to both eA1 and iA1
     syn_exc_mgn_ctx = {'synapse_model': 'static_synapse', 'delay': d, 'weight': w_mgn_ctx}

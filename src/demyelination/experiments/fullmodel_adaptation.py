@@ -75,7 +75,7 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     nest.Connect(pg_aone, topology_snn.find_population('eA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx})
     nest.Connect(pg_aone, topology_snn.find_population('iA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx})
 
-    #''' Stimulus generator removed for now
+    ''' Stimulus generator removed for now
     # stimulus generator
     ng = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_stim, 'start' : 1000., 'stop' : 1025.})
     # connecting stimulus !!! generator to snn

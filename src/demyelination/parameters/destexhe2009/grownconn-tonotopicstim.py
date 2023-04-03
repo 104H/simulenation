@@ -16,10 +16,8 @@ In this experiment we apply tonotopic stimimulation from the MGN to the eA1.
 """
 
 import numpy as np
-import sys
 from defaults.paths import set_project_paths
 from fna.tools.utils.system import set_kernel_defaults
-from fna.decoders.extractors import set_recording_device
 
 from utils.system import set_system_parameters
 
@@ -27,7 +25,7 @@ from utils.system import set_system_parameters
 # experiments parameters
 project_label = 'demyelination'
 
-experiment_label = 'destexhe-tonotopic-cadist-allconn'
+experiment_label = 'destexhe-tonotopic-reloaded-10pc'
 
  ######################################################################################
 # system parameters
@@ -59,13 +57,14 @@ ParameterRange = {
 
 ################################
 def build_parameters(b, nu_x, w_exc, nuX_stim, w_th_stimscale):
+    np_seed = 1
     system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=1, mem=512000)
 
     # ############################################################
     # Simulation parameters
     resolution = .1
     kernel_pars = set_kernel_defaults(resolution=resolution, run_type=system_label, data_label=experiment_label,
-                                      data_paths=paths, **system_params)
+                                      np_seed=np_seed, data_paths=paths, **system_params)
 
     hetdelay_thl = 0
     hetdelay_ctx = 0
@@ -304,8 +303,8 @@ def build_parameters(b, nu_x, w_exc, nuX_stim, w_th_stimscale):
 
     conn_inh_aone = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': epsilon_aone}
 
-    conn_exc_aone_recurrant = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': 0}
-    conn_exc_aone = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': epsilon_aone}
+    conn_exc_aone_intra_eA1 = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': 0}
+    conn_exc_aone_to_iA1 = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': epsilon_aone}
 
     # thalamocortical projections: to both eA1 and iA1
     syn_exc_mgn_ctx = {'synapse_model': 'static_synapse', 'delay': d, 'weight': w_mgn_ctx}
@@ -336,8 +335,8 @@ def build_parameters(b, nu_x, w_exc, nuX_stim, w_th_stimscale):
                         None
                             ],
         'conn_specs': [conn_intra_trn, conn_inh_mgn, conn_exc_mgn,
-                        #conn_exc_aone_recurrant,
-                        conn_exc_aone, conn_inh_aone, conn_inh_aone,
+                        #conn_exc_aone_intra_eA1,
+                        conn_exc_aone_to_iA1, conn_inh_aone, conn_inh_aone,
                         #conn_exc_mgn_ctx,
                         conn_exc_mgn_ctx,
                         #conn_exc_ctx_mgn,

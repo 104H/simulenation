@@ -1,1 +1,1 @@
-python3 execute.py --project demyelination -p demyelination/parameters/plasticity_aone.py -c plasticity_aone
+python3 execute.py --project demyelination -p demyelination/parameters/aone_adaptation.py -c aone

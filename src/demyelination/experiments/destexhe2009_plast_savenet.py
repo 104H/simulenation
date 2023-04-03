@@ -63,7 +63,7 @@ class spikesandparams:
 
 def store_net (topology_snn, rank, path):
     network = {}
-    network["synapse_ex"] = nest.GetConnections().get(("source", "target", "delay", "weight"), output="pandas")
+    network["synapse_ex"] = nest.GetConnections(topology_snn.populations['eA1'].nodes, topology_snn.populations['eA1'].nodes).get(("source", "target", "delay", "weight"), output="pandas")
 
     p = os.path.join(path, f"net_{rank}")
     with open(p, "wb") as f:
@@ -227,9 +227,6 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
 
     o = spikesandparams(parameters.label, None, None)
 
-    print(nest.GetDefaults('static_synapse'))
-    exit()
-
     nest.EnableStructuralPlasticity()
 
     #print(nest.GetConnections(topology_snn.find_population('iA1').nodes, topology_snn.find_population('iA1').nodes[-100:]))
@@ -241,7 +238,7 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     with nest.RunManager():
         record_interval = 50. * 1000
 
-        for total_time in np.arange(0, 100. * 1000, record_interval):
+        for total_time in np.arange(0, 2000. * 1000, record_interval):
             record_data(o, topology_snn)
             nest.Run(record_interval)
 

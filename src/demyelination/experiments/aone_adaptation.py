@@ -4,6 +4,7 @@ import re
 import nest
 import pickle
 from matplotlib import pyplot as plt
+import numpy as np
 
 from fna.tools.visualization.helper import set_global_rcParams
 from fna.tools.utils import logger
@@ -24,9 +25,49 @@ class spikesandparams:
         self.params = paramdict
         self.spikeobj = spikeobj
         self.metrics = metrics
+        self.calcium = { 'eA1' : [], 'iA1' : [] }
+        self.connectivity = {
+                "z" : {
+                    "Den" : {
+                            "ex" : { 'eA1' : [], 'iA1' : [] },
+                            "in" : { 'eA1' : [], 'iA1' : [] }
+                            },
+                    "Axon" : {
+                            "ex" : { 'eA1' : [], 'iA1' : [] },
+                            "in" : { 'eA1' : [], 'iA1' : [] }
+                            }
+                    },
+                "z_connected" : {
+                    "Den" : {
+                            "ex" : { 'eA1' : [], 'iA1' : [] },
+                            "in" : { 'eA1' : [], 'iA1' : [] }
+                            },
+                    "Axon" : {
+                            "ex" : { 'eA1' : [], 'iA1' : [] },
+                            "in" : { 'eA1' : [], 'iA1' : [] }
+                            }
+                    }
+                }
+        # parent dict is the source, child dict is the target
+        self.nestconnectivity = {
+                    'eA1' : { 'eA1' : [], 'iA1' : [] },
+                    'iA1' : { 'eA1' : [], 'iA1' : [] }
+                }
+
+def record_ca (population):
+        ca = [c for c in population.nodes.Ca if c != None]
+        return np.mean(ca)
+
+def record_connectivity (population, connType, synType, metric):
+        syn_elems = population.nodes.synaptic_elements
+        return np.sum(list(neuron[connType + '_' + synType][metric] for neuron in syn_elems if neuron != None))
+
+def record_connectivity_fromnest (source, target):
+    return len(nest.GetConnections(source, target).get('target'))
 
 def run(parameters, display=False, plot=True, save=True, load_inputs=False):
-    print("[EXP FILE LOG]", parameters)
+    #print("[EXP FILE LOG]", parameters)
+    print("[EXP FILE LOG] Start")
 
     nest.ResetKernel()
     nest.rng_seed = 12345
@@ -38,6 +79,8 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     storage_paths = set_storage_locations(parameters.kernel_pars.data_path, parameters.kernel_pars.data_prefix,
                                           parameters.label, save=save)
     # set kernel parameters after reset
+    parameters.kernel_pars['local_num_threads'] = 1 # can't run plasticity with multiple threads
+    parameters.kernel_pars['data_path'] = storage_paths['other'] # store the spikerecorder readings to the other folder
     nest.SetKernelStatus(extract_nestvalid_dict(parameters.kernel_pars.as_dict(), param_type='kernel'))
 
     logger.update_log_handles(job_name=parameters.label, path=storage_paths['logs'])
@@ -61,6 +104,22 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
                                   #topologies=[E_layer_properties, I_layer_properties, E_layer_properties, I_layer_properties],
                                   spike_recorders=spike_recorders)
 
+
+    synaptic_elements = {
+        'Den_ex': parameters.growth_pars['growth_curve_e_e'],
+        'Den_in': parameters.growth_pars['growth_curve_e_i'],
+        'Axon_ex': parameters.growth_pars['growth_curve_e_e'],
+    }
+
+    synaptic_elements_i = {
+        'Den_ex': parameters.growth_pars['growth_curve_i_e'],
+        'Den_in': parameters.growth_pars['growth_curve_i_i'],
+        'Axon_in': parameters.growth_pars['growth_curve_i_i'],
+    }
+
+    nest.SetStatus(topology_snn.find_population('eA1').nodes, 'synaptic_elements', synaptic_elements)
+    nest.SetStatus(topology_snn.find_population('iA1').nodes, 'synaptic_elements', synaptic_elements_i)
+
     # connect network
     NESTConnector(source_network=topology_snn, target_network=topology_snn, connection_parameters=parameters.connection_pars)
 
@@ -76,17 +135,26 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     nest.Connect(pg_aone, topology_snn.find_population('eA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx})
     nest.Connect(pg_aone, topology_snn.find_population('iA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx})
 
-    # plt.hist(parameters.noise_pars.w_noise_mgn, bins=100)
-    # plt.hist(parameters.noise_pars.w_noise_trn, bins=50, alpha=0.5)
-    # plt.show(block=False)
-    # exit(-1)
-    # pg_trn = nest.Create('poisson_generator', n=1, params={'rate': [parameters.noise_pars.nuX_TRN]})
-    # pg_mgn = nest.Create('poisson_generator', n=1, params={'rate': [parameters.noise_pars.nuX_MGN]})
-    # connecting noise generator to snn
-    # [nest.Connect(pg, _.nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_thalamus}) for _ in
-    #  topology_snn.populations.values()]
-    # nest.Connect(pg_mgn, topology_snn.find_population('MGN').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_mgn})
-    # nest.Connect(pg_trn, topology_snn.find_population('TRN').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_trn})
+    nest.structural_plasticity_update_interval = 100.
+
+    nest.CopyModel('static_synapse', 'synapse_ex')
+    #nest.SetDefaults('synapse_ex', {'weight': .5, 'delay': .1}) # add w_aone
+    nest.SetDefaults('synapse_ex', {'weight': 1., 'delay': .1}) # add w_aone
+    nest.CopyModel('static_synapse', 'synapse_in')
+    nest.SetDefaults('synapse_in', {'weight': -1. * parameters.noise_pars.gamma_aone, 'delay': .1})
+    nest.structural_plasticity_synapses = {
+            'synapse_ex': {
+                'synapse_model': 'synapse_ex',
+                'post_synaptic_element': 'Den_ex',
+                'pre_synaptic_element': 'Axon_ex',
+            },
+            'synapse_in': {
+                'synapse_model': 'synapse_in',
+                'post_synaptic_element': 'Den_in',
+                'pre_synaptic_element': 'Axon_in',
+            },
+        }
+
 
     ''' Stimulus generator removed for now
     # stimulus generator
@@ -95,11 +163,48 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     nest.Connect(ng, topology_snn.populations['TRN'].nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_stim})
     '''
 
-    nest.Simulate(5000.)
+    o = spikesandparams(parameters.label, None, None)
+
+    nest.EnableStructuralPlasticity()
+
+    # preparing file path to save data
+    rank = str(nest.Rank())
+    filepath = os.path.join(storage_paths['activity'], f'spk_{parameters.label}_{rank}')
+
+    o.nestconnectivity['eA1']['eA1'].append(record_connectivity_fromnest(topology_snn.populations['eA1'].nodes, topology_snn.populations['eA1'].nodes))
+    o.nestconnectivity['eA1']['iA1'].append(record_connectivity_fromnest(topology_snn.populations['eA1'].nodes, topology_snn.populations['iA1'].nodes))
+    o.nestconnectivity['iA1']['eA1'].append(record_connectivity_fromnest(topology_snn.populations['iA1'].nodes, topology_snn.populations['eA1'].nodes))
+    o.nestconnectivity['iA1']['iA1'].append(record_connectivity_fromnest(topology_snn.populations['iA1'].nodes, topology_snn.populations['iA1'].nodes))
+
+    with nest.RunManager():
+        record_interval = 10000.
+        for _ in np.arange(0., 50000., record_interval):
+            nest.Run(record_interval)
+
+            o.calcium['eA1'].append( record_ca(topology_snn.find_population('eA1')) )
+            o.calcium['iA1'].append( record_ca(topology_snn.find_population('iA1')) )
+
+            o.nestconnectivity['eA1']['eA1'].append(record_connectivity_fromnest(topology_snn.populations['eA1'].nodes, topology_snn.populations['eA1'].nodes))
+            o.nestconnectivity['eA1']['iA1'].append(record_connectivity_fromnest(topology_snn.populations['eA1'].nodes, topology_snn.populations['iA1'].nodes))
+            o.nestconnectivity['iA1']['eA1'].append(record_connectivity_fromnest(topology_snn.populations['iA1'].nodes, topology_snn.populations['eA1'].nodes))
+            o.nestconnectivity['iA1']['iA1'].append(record_connectivity_fromnest(topology_snn.populations['iA1'].nodes, topology_snn.populations['iA1'].nodes))
+
+            for z in ['z_connected', 'z']:
+                for c in ['Axon', 'Den']:
+                    for t in ['ex', 'in']:
+                        for p in ['eA1', 'iA1']:
+                            try:
+                                o.connectivity[z][c][t][p].append( record_connectivity(topology_snn.find_population(p), c, t, z) ) 
+                            except:
+                                pass
+
+            #with open(filepath, 'wb') as f:
+            #    pickle.dump(o, f)
+     
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
 
     ''' DUMP ALL POPULATIONS INTO A PICKLE FILE '''
-    activitylist = dict( zip( topology_snn.population_names, [_.spiking_activity for _ in topology_snn.populations.values()] ) )
+    o.spikeobj = dict( zip( topology_snn.population_names, [_.spiking_activity for _ in topology_snn.populations.values()] ) )
 
     print("[EXP FILE LOG] Activity List Prepared", flush=True)
     print("[EXP FILE LOG] Computing Pearson Coefficient", flush=True)
@@ -112,16 +217,12 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     precomputed = { "pearsoncoeff" : {
                         #"MGN" : temp_mgn.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0],
                         #"TRN" : temp_trn.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0],
-                        "eA1" : temp_eaone.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0],
-                        "iA1" : temp_iaone.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0]
+                        #"eA1" : temp_eaone.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0],
+                        #"iA1" : temp_iaone.pairwise_pearson_corrcoeff(nb_pairs=500, time_bin=10)[0]
                     }
                 }
     
     print("[EXP FILE LOG] Pearson Coefficient Computed", flush=True)
-
-    o = spikesandparams( parameters.label, activitylist, precomputed )
-
-    filepath = os.path.join(storage_paths['activity'], f'spk_{parameters.label}')
 
     with open(filepath, 'wb') as f:
         pickle.dump(o, f)

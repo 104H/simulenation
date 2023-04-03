@@ -27,7 +27,7 @@ from utils.system import set_system_parameters
 # experiments parameters
 project_label = 'demyelination'
 
-experiment_label = 'dest-lower-recurr'
+experiment_label = 'dest-lower-recurr-longsim'
 
  ######################################################################################
 # system parameters
@@ -50,8 +50,8 @@ ParameterRange = {
 
 ParameterRange = {
     'T' : [0],
-    'recir_ea1_gr' : [.1, .01],
-    'recir_ia1_gr' : [.1, .01]
+    'recir_ea1_gr' : [.1],
+    'recir_ia1_gr' : [.1]
 }
 
 ################################

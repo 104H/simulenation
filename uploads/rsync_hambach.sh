@@ -1,1 +1,1 @@
-rsync -zavh --exclude='*.swp' --exclude=.idea --exclude=cmake-build-debug --exclude=data --exclude=CMakeFiles --exclude='*.pyc' --exclude='*.pdf' --exclude=__pycache__ src hambach:/users/hameed/simulenation/
+rsync -zavh -r --exclude='*.swp' --exclude=.idea --exclude=cmake-build-debug --exclude=data --exclude=CMakeFiles --exclude='*.pyc' --exclude='*.pdf' --exclude=__pycache__ src hambach:/users/hameed/simulenation/

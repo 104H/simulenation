@@ -23,11 +23,11 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 
 # ################################
 ParameterRange = {
-        'T' : [1],
+        'T' : [9],
         #'eCa' : np.arange(0.2, 2., 0.4),
-        'eCa' : [.02],
+        'eCa' : [.01],
         #'iCa' : np.arange(0.2, .6, 0.2),
-        'iCa' : [.02],
+        'iCa' : [.2],
 }
 
 
@@ -51,13 +51,13 @@ def build_parameters(T, eCa, iCa):
     wX_TRN = 0.05
     '''
 
-    nuX_aone = 2. # this gives ~3Hz
+    nuX_aone = 20. * .8 # this gives ~3Hz
     #nuX_aone = 1. # used to be 10.
-    #gamma_aone = 7.
+    gamma_aone = 9.
     #w_aone = .5
 
-    w_input_aone_ex = 1. # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
-    w_input_aone_in = 1. # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
+    w_input_aone_ex = 15. # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
+    w_input_aone_in = 15. # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
     #w_ctx_trn = 0.08
     #w_ctx_mgn = 0.04
     #w_mgn_ctx = 0.5
@@ -94,6 +94,7 @@ def build_parameters(T, eCa, iCa):
     # according to RS neuron parameters in Destexhe, A. (2009). https://doi.org/10.1007/s10827-009-0164-4
     # with "strong adaptation"
     neuron_exc_params_aone = {
+        'model': 'aeif_cond_exp',
         "a": 2.,
         "b": 40.,
         'tau_w': 150.,
@@ -108,6 +109,7 @@ def build_parameters(T, eCa, iCa):
 
     # according to fast-spiking inh neuron parameters in Destexhe, A. (2009). https://doi.org/10.1007/s10827-009-0164-4
     neuron_inh_params_aone = {
+        'model': 'aeif_cond_exp',
         "a": 2.,
         "b": 0.,            # no spike-based adaptation
         'tau_w': 600.,
@@ -156,55 +158,45 @@ def build_parameters(T, eCa, iCa):
     # Plasticity Parameters
     update_interval = 100.
 
-    gr_scaling = .0001
+    gr_scaling = .01
     #g_curve = 'linear'
     # Excitatory synaptic elements of excitatory neurons
-    growth_curve_e_e_den = {
-        'growth_curve': "gaussian",
-        'growth_rate': 4 * gr_scaling,  # (elements/ms)
-        'continuous': False,
-        'eta': 0.0,  # Ca2+
-        'eps': eCa,  # Ca2+
-    }
-
-   # Excitatory synaptic elements of excitatory neurons
     growth_curve_e_e = {
         'growth_curve': "gaussian",
-        'growth_rate': 3 * gr_scaling,  # (elements/ms)
+        'growth_rate': 2 * gr_scaling,  # (elements/ms)
         'continuous': False,
-        'eta': 0.0,  # Ca2+
+        'eta': 0.09,  # Ca2+
         'eps': eCa,  # Ca2+
     }
 
     # Inhibitory synaptic elements of excitatory neurons
     growth_curve_e_i = {
         'growth_curve': "gaussian",
-        'growth_rate': 1 * gr_scaling,  # (elements/ms)
+        'growth_rate': 2 * gr_scaling,  # (elements/ms)
         'continuous': False,
-        'eta': 0.0,  # Ca2+
+        'eta': 0.09,  # Ca2+
         'eps': growth_curve_e_e['eps'],  # Ca2+
     }
 
     # Excitatory synaptic elements of inhibitory neurons
     growth_curve_i_e = {
         'growth_curve': "gaussian",
-        'growth_rate': 3 * gr_scaling,  # (elements/ms)
+        'growth_rate': 1 * gr_scaling,  # (elements/ms)
         'continuous': False,
-        'eta': 0.0,  # Ca2+
+        'eta': 0.09,  # Ca2+
         'eps': iCa,  # Ca2+
     }
 
     # Inhibitory synaptic elements of inhibitory neurons
     growth_curve_i_i = {
         'growth_curve': "gaussian",
-        'growth_rate': 1 * gr_scaling,  # (elements/ms)
+        'growth_rate': 2 * gr_scaling,  # (elements/ms)
         'continuous': False,
-        'eta': 0.0,  # Ca2+
+        'eta': 0.09,  # Ca2+
         'eps': growth_curve_i_e['eps']  # Ca2+
     }
 
     growth_curves = {
-                'growth_curve_e_e_den' : growth_curve_e_e_den,
                 'growth_curve_e_e' : growth_curve_e_e,
                 'growth_curve_e_i' : growth_curve_e_i,
                 'growth_curve_i_e' : growth_curve_i_e,
@@ -284,6 +276,7 @@ def build_parameters(T, eCa, iCa):
         'w_noise_ctx_ex' : w_input_aone_ex,
         'w_noise_ctx_in' : w_input_aone_in,
         'nuX_aone' : nuX_aone * nEA1 * 0.1,
+        'gamma_aone' : gamma_aone,
         #'wMGN' : wMGN,
         #'nuX_stim' : nuX_stim
     }

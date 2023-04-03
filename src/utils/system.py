@@ -24,7 +24,16 @@ def set_system_parameters(cluster, queue='batch', walltime='00-24:00:00', nodes=
             nodes=nodes,  # number of nodes
             ppn=ppn,  # number of cores / node (max 20)
             walltime=walltime,
-            queue=queue)#'blaustein'/hammstein
+            queue=queue,
+            mem=mem)#'blaustein'/hammstein
+
+    elif cluster == 'Hambach-MPI':
+        system = dict(
+            nodes=nodes,  # number of nodes
+            ppn=ppn,  # number of cores / node (max 20)
+            walltime=walltime,
+            queue=queue,
+            mem=mem)  # 'blaustein'/hammstein
 
     elif cluster == 'MPI':
         system = dict(
@@ -38,7 +47,7 @@ def set_system_parameters(cluster, queue='batch', walltime='00-24:00:00', nodes=
             nodes=1,  # number of nodes
             ppn=ppn,  # number of cores / node (max 20) used to be 16
             # num_processes=ppn,
-            local_num_threads=1,  # ensure there's 1 thread for each virtual process
+            # local_num_threads=1,  # ensure there's 1 thread for each virtual process, when using MPI
             walltime='01-00:00:00',
             queue='batch')
     else:

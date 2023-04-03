@@ -230,7 +230,7 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     with nest.RunManager():
         record_interval = 20000.
 
-        for total_time in np.arange(0, 100 * 1000, record_interval):
+        for total_time in np.arange(0, 1000 * 1000, record_interval):
             record_data(o, topology_snn)
             nest.Run(record_interval)
 

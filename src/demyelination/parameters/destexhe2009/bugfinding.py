@@ -81,15 +81,14 @@ def build_parameters(T):
     # Connectivity
     # the model has been scaled up, so the global epsilon is not used anymore
     # however the stim_amplitude var is dependent on it, so we will keep it uncommented
+    # the network will be connected based on a loaded experiment therefore we make epsilon zero here
     epsilon = 0.02 # Destexhe 2009
 
     scale_eps_intratrn = 2
 
     epsilon_th = epsilon / thl_increase_scale
+    epsilon_aone = epsilon / ctx_increase_scale
 
-    ctx_epsilon_decrease = 0. # decrease epsilon to 80pc and then grow the 20pc connections with structural plasticity
-    epsilon_aone = (epsilon / ctx_increase_scale)
-    
     epsilon_mgn_ctx = epsilon / ctx_increase_scale
     epsilon_ctx_trn = epsilon / thl_increase_scale
     epsilon_ctx_mgn = epsilon / thl_increase_scale
@@ -99,7 +98,11 @@ def build_parameters(T):
     wX_TRN = 1.
     nuX_aone = stim_amplitude * (nEA1 * epsilon_aone)
 
-    
+    # we set epsilon for recurrent conn to 0 because the conn will be loaded
+    # this is intentionaly done here because epsilon is used in the computation of nux above
+    #epsilon_th = 0
+    #epsilon_aone = 0
+
     #w_exc = 6. # excitatory weight
 
     gamma = 10. # one gamma for both CTX and THL
@@ -117,6 +120,7 @@ def build_parameters(T):
     w_mgn_ctx = w_exc
 
     d = 1.5  # synaptic transmission delay (ms)
+
 
     MGN_params = {
         'model': 'aeif_cond_exp',
@@ -161,8 +165,7 @@ def build_parameters(T):
     neuron_exc_params_aone = {
         'model': 'aeif_cond_exp',
         "a": 1.,
-        #"a": 0.,
-        #"b": 0.,
+        # "b": 40.,
         "b": b,
         'tau_w': 600.,
         'Delta_T': 2.5,
@@ -199,7 +202,7 @@ def build_parameters(T):
         "t_ref": 2.5
     }
 
-    #''' Plasticity Parameters
+    ''' Plasticity Parameters
     # for an unknown reason it overshoots the Ca level by .025 in the gaussian case and .05 in the linear case
     eCa = (13 / 100) # target calium level = target activity / 100
     iCa = (17 / 100) / 2
@@ -289,8 +292,12 @@ def build_parameters(T):
 
     conn_inh_aone = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': epsilon_aone}
 
+    '''
     conn_exc_aone_to_iA1 = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': epsilon_aone}
     conn_exc_aone_intra_eA1 = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': epsilon_aone * ctx_epsilon_decrease}
+    '''
+    conn_exc_aone_recurrant = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': 0}
+    conn_exc_aone = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': epsilon_aone}
 
     # thalamocortical projections: to both eA1 and iA1
     syn_exc_mgn_ctx = {'synapse_model': 'static_synapse', 'delay': d, 'weight': w_mgn_ctx}
@@ -303,10 +310,9 @@ def build_parameters(T):
     conn_exc_ctx_mgn = {'allow_autapses': False, 'allow_multapses': False, 'rule': 'pairwise_bernoulli', 'p': epsilon_ctx_mgn}
 
     # TGT <- SRC
-    # TGT <- SRC
     topology_snn_synapses = {
         'connect_populations': [('TRN', 'TRN'), ('MGN', 'TRN'), ('TRN', 'MGN'), # within thalamus
-                                #('eA1', 'eA1'),
+                                ('eA1', 'eA1'),
                                 ('iA1', 'eA1'), ('iA1', 'iA1'), ('eA1', 'iA1'),  # recurrent A1
                                 #('eA1', 'MGN'),
                                 ('iA1', 'MGN'),  # thalamocortical
@@ -314,7 +320,8 @@ def build_parameters(T):
                                 ('TRN', 'eA1'),  # cortico-thalamic
                                 ],
         'weight_matrix': [None, None, None,
-                        None, None, None, None,
+                        None,
+                        None, None, None,
                         #None,
                         None,
                         #None,
@@ -322,7 +329,7 @@ def build_parameters(T):
                             ],
         # TODO add rest / update
         'conn_specs': [conn_intra_trn, conn_inh_mgn, conn_exc_mgn,
-                        #conn_exc_aone_intra_eA1,
+                        conn_exc_aone_intra_eA1,
                         conn_exc_aone_to_iA1, conn_inh_aone, conn_inh_aone,
                         #conn_exc_mgn_ctx,
                         conn_exc_mgn_ctx,
@@ -330,7 +337,7 @@ def build_parameters(T):
                         conn_exc_ctx_trn,
                         ],
         'syn_specs': [syn_inh_mgn, syn_inh_mgn, syn_exc_mgn,
-                        #syn_exc_aone,
+                        syn_exc_aone,
                         syn_exc_aone, syn_inh_aone, syn_inh_aone,
                         #syn_exc_mgn_ctx,
                         syn_exc_mgn_ctx,

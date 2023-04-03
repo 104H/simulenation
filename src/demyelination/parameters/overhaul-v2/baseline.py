@@ -62,7 +62,7 @@ def build_parameters(T, b):
 
     nuX_aone = 25.
     gamma_aone = 9.
-    w_aone = 1.6 #3. # epsp 0.26
+    w_aone = 1.6 # epsp of 2.1 at -70mV. used to be 3. # epsp 0.26
 
     scale_w = 4. # scale factor for MGN->CTX weight
     scale_eps = 2. # scale factor for MGN->CTX connection probability (epsilon)

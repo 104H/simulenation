@@ -1,7 +1,8 @@
 """
-July 11, 2022
+Aug 15, 2022
 
 Tonotopically connect MGN to the eA1 and back. Stimulate MGN for 100s.
+This file also contains connection from the TRN back into the TRN.
 """
 
 import numpy as np
@@ -75,33 +76,57 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     # possion generator
     pg_th = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_th})
     for idx in range(topology_snn.find_population('MGN').size):
-        nest.Connect(pg_th, topology_snn.find_population('MGN').nodes[idx], 'one_to_one', syn_spec={'weight': parameters.noise_pars.w_noise_mgn[idx]})
-        nest.Connect(pg_th, topology_snn.find_population('TRN').nodes[idx], 'one_to_one', syn_spec={'weight': parameters.noise_pars.w_noise_trn[idx]})
+        nest.Connect(pg_th, topology_snn.find_population('MGN').nodes[idx], 'one_to_one', syn_spec={'weight': parameters.noise_pars.w_noise_mgn})
+        nest.Connect(pg_th, topology_snn.find_population('TRN').nodes[idx], 'one_to_one', syn_spec={'weight': parameters.noise_pars.w_noise_trn})
 
     pg_aone = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_aone})
     nest.Connect(pg_aone, topology_snn.find_population('eA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx})
     nest.Connect(pg_aone, topology_snn.find_population('iA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx})
 
-    #''' tonotopic MGN to eA1 connection
+    ''' tonotopic MGN to eA1 connection
+    # the populations of MGN and eA1 was split into 5 equally sized subpopulations
+    # each was these was only connected to a corresponding subpopulation
+    # e.g Neurons 1-100 MGN are connected to neurons 1-400 in the eA1
     for i in range(0, 500, 100):
+        # connection from mgn to eA1
         nest.Connect(topology_snn.find_population('MGN').nodes[i : i+99], \
                 topology_snn.find_population('eA1').nodes[i*4 : (i*4)+399], \
-                parameters.connection_pars.conn_specs[6], \
-                parameters.connection_pars.syn_specs[6])
+                parameters.mgn_ctx_pars.conn, \
+                parameters.mgn_ctx_pars.syn)
         nest.Connect(topology_snn.find_population('eA1').nodes[i*4 : (i*4)+399], \
                 topology_snn.find_population('MGN').nodes[i : i+99], \
                 parameters.ctx_mgn_pars.conn, \
                 parameters.ctx_mgn_pars.syn)
     #'''
+    #''' tonotopic MGN to eA1 connection
+    # the populations of MGN and eA1 was split into 5 equally sized subpopulations
+    # each was these was only connected to a corresponding subpopulation
+    # e.g Neurons 1-100 MGN are connected to neurons 1-400 in the eA1
+    for m, c in zip(range(0, 200, 40), range(0, 2000, 400)):
+        print(m, c)
+        # connection from mgn to eA1
+        nest.Connect(topology_snn.find_population('MGN').nodes[m: m + 40], \
+                     topology_snn.find_population('eA1').nodes[c: c + 400], \
+                     parameters.mgn_ctx_pars.conn, \
+                     parameters.mgn_ctx_pars.syn)
+        nest.Connect(topology_snn.find_population('eA1').nodes[c: c + 400], \
+                     topology_snn.find_population('MGN').nodes[m: m + 40], \
+                     parameters.ctx_mgn_pars.conn, \
+                     parameters.ctx_mgn_pars.syn)
+        cn = nest.GetConnections(topology_snn.find_population('eA1').nodes,
+                                 topology_snn.find_population('MGN').nodes).get(
+            ("source", "target", "delay", "weight"), output="pandas")
+        print((cn.shape[0] / (200 * 2000)) * 100)
+    # '''
 
     #''' Stimulus generator removed for now
     # stimulus generator
-    ng = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_stim, 'start' : 2000., 'stop' : 2000.+parameters.noise_pars.stim_duration})
+    ng = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_stim, 'start' : 40000., 'stop' : 40000.+parameters.noise_pars.stim_duration})
     # connecting stimulus !!! generator to snn
-    nest.Connect(ng, topology_snn.populations['MGN'].nodes[:99], 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_stim})
+    nest.Connect(ng, topology_snn.populations['MGN'].nodes[:40], 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_stim})
     #'''
 
-    nest.Simulate(5000.)
+    nest.Simulate(50000.)
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
 
     ''' DUMP ALL POPULATIONS INTO A PICKLE FILE '''

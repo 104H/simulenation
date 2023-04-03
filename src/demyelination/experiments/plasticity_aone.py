@@ -55,7 +55,7 @@ def record_ca (population):
 
 def record_connectivity (population, connType, synType, metric):
         syn_elems = population.nodes.synaptic_elements
-        return np.mean(list(neuron[connType + '_' + synType][metric] for neuron in syn_elems if neuron != None))
+        return np.sum(list(neuron[connType + '_' + synType][metric] for neuron in syn_elems if neuron != None))
 
 def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     nest.ResetKernel()
@@ -123,12 +123,13 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     nest.Connect(pg_aone, topology_snn.find_population('eA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx_ex})
     nest.Connect(pg_aone, topology_snn.find_population('iA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx_in})
 
-    #nest.structural_plasticity_update_interval = 100.
+    nest.structural_plasticity_update_interval = 100.
 
     nest.CopyModel('static_synapse', 'synapse_ex')
-    nest.SetDefaults('synapse_ex', {'weight': .5, 'delay': .1}) # add w_aone
+    #nest.SetDefaults('synapse_ex', {'weight': .5, 'delay': .1}) # add w_aone
+    nest.SetDefaults('synapse_ex', {'weight': 1., 'delay': .1}) # add w_aone
     nest.CopyModel('static_synapse', 'synapse_in')
-    nest.SetDefaults('synapse_in', {'weight': -1.0, 'delay': .1})
+    nest.SetDefaults('synapse_in', {'weight': -1. * parameters.noise_pars.gamma_aone, 'delay': .1})
     nest.structural_plasticity_synapses = {
             'synapse_ex': {
                 'synapse_model': 'synapse_ex',
@@ -157,24 +158,26 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     rank = str(nest.Rank())
     filepath = os.path.join(storage_paths['activity'], f'spk_{parameters.label}_{rank}')
 
-    record_interval = 20000.
-    for _ in np.arange(0., 200000., record_interval):
-        nest.Simulate(record_interval)
+    with nest.RunManager():
+        record_interval = 10000.
+        for _ in np.arange(0., 30000., record_interval):
+            #nest.Simulate(record_interval)
+            nest.Run(record_interval)
 
-        o.calcium['eA1'].append( record_ca(topology_snn.find_population('eA1')) )
-        o.calcium['iA1'].append( record_ca(topology_snn.find_population('iA1')) )
+            o.calcium['eA1'].append( record_ca(topology_snn.find_population('eA1')) )
+            o.calcium['iA1'].append( record_ca(topology_snn.find_population('iA1')) )
 
-        for z in ['z_connected', 'z']:
-            for c in ['Axon', 'Den']:
-                for t in ['ex', 'in']:
-                    for p in ['eA1', 'iA1']:
-                        try:
-                            o.connectivity[z][c][t][p].append( record_connectivity(topology_snn.find_population(p), c, t, z) ) 
-                        except:
-                            pass
+            for z in ['z_connected', 'z']:
+                for c in ['Axon', 'Den']:
+                    for t in ['ex', 'in']:
+                        for p in ['eA1', 'iA1']:
+                            try:
+                                o.connectivity[z][c][t][p].append( record_connectivity(topology_snn.find_population(p), c, t, z) ) 
+                            except:
+                                pass
 
-        #with open(filepath, 'wb') as f:
-        #    pickle.dump(o, f)
+            #with open(filepath, 'wb') as f:
+            #    pickle.dump(o, f)
         
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
 

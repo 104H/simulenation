@@ -24,6 +24,13 @@ def set_project_paths(system, project_label):
 			'remote_directory':     wd + '/' + project_label + '/data/export/',
 			'queueing_system':      'slurm'},
 
+		'Hambach-MPI': {
+			'data_path':            wd + '/' + project_label + '/data/',
+			'jdf_template':         wd + '/defaults/cluster_templates/Hambach-MPI.sh',
+			'matplotlib_rc':        wd + '/defaults/matplotlibrc',
+			'remote_directory':     wd + '/' + project_label + '/data/export/',
+			'queueing_system':      'slurm'},
+
 		'Jureca': {
 			'data_path':            wd + '/' + project_label + '/data/',
 			'jdf_template':         wd + '/defaults/cluster_templates/Jureca_jdf.sh',

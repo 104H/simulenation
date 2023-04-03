@@ -1,5 +1,7 @@
 """
+Aug 2, 2022
 
+Updated synaptic time constants.
 """
 import numpy as np
 import sys
@@ -13,7 +15,7 @@ from utils.system import set_system_parameters
 # experiments parameters
 project_label = 'demyelination'
 
-experiment_label = 'adaptation-aone-nuxweight'
+experiment_label = 'aone_lowergamma-syntau'
 
  ######################################################################################
 # system parameters
@@ -23,18 +25,13 @@ paths = set_project_paths(system=system_label, project_label=project_label)
 
 # ################################
 ParameterRange = {
-        'T' : [0],
-        'nuX_aone' : [20.],
-        'gamma_aone' : [9.],
-        'w_input_aone' : [15.]
-        #'nuX_aone' : np.arange(5, 21, 1),
-        #'gamma_aone' : np.arange(2, 10, 1),
-        #'w_input_aone' : np.arange(10, 16, 1)
+        'nuX_aone' : np.arange(5, 21, 1),
+        'gamma_aone' : np.arange(2, 10, 1),
 }
 
 
 ################################
-def build_parameters(T, nuX_aone, gamma_aone, w_input_aone):
+def build_parameters(nuX_aone, gamma_aone):
     system_params = set_system_parameters(cluster=system_label, nodes=1, ppn=8, mem=512000)
 
     # ############################################################
@@ -56,9 +53,9 @@ def build_parameters(T, nuX_aone, gamma_aone, w_input_aone):
     #nuX_aone = 10. # this gives ~3Hz
     #nuX_aone = 1. # used to be 10.
     #gamma_aone = 2.
-    w_aone = 1.
+    w_aone = 3. #1.
 
-    #w_input_aone = 10. # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
+    w_input_aone = 15. # used to be 1. # excitatory synaptic weight of background noise onto A1 (mV)  ?
     #w_ctx_trn = 0.08
     #w_ctx_mgn = 0.04
     #w_mgn_ctx = 0.5
@@ -123,92 +120,49 @@ def build_parameters(T, nuX_aone, gamma_aone, w_input_aone):
         'V_m': -60.,
     }
 
+    #''' Plasticity Parameters
     '''
-    neuron_params_aone = {
-            'tau_m': 10.0,  # membrane time constant (ms)
-             # excitatory synaptic time constant (ms)
-             'tau_syn_ex': 0.5,
-             # inhibitory synaptic time constant (ms)
-             'tau_syn_in': 0.5,
-             't_ref': 2.0,  # absolute refractory period (ms)
-             'E_L': -65.0,  # resting membrane potential (mV)
-             'V_th': -50.0,  # spike threshold (mV)
-             'C_m': 250.0,  # membrane capacitance (pF)
-             'V_reset': -65.0  # reset potential (mV)
-         }
-
-    '''
-    '''
-    neuron_params_thl = {
-        'model': 'aeif_cond_exp',
-        'E_L': -60.,  # resting membrane potential (mV) - see refs
-        'C_m': 50.0,      # membrane capacity (pF)
-        'g_L': 5.0,      # leak conductance  - see refs
-        'V_reset': -52.,  # reset membrane potential after a spike (mV)  - for bustiness
-        'V_th': -50.,  # spike threshold (mV)
-        'tau_syn_ex': 2.5, # exc. synaptic time constant  - mit paper
-        'tau_syn_in': 10., # exc. synaptic time constant  - mit paper
-
-        # initial burst + adaptation
-        "a": 0.5,
-        "b": 10.,
-        'tau_w': 150.,
-    }
-    '''
-
-    ''' Plasticity Parameters
     update_interval = 100.
 
-    gr_scaling = .001
-    #g_curve = 'linear'
+    gr_scaling = .00001
     # Excitatory synaptic elements of excitatory neurons
-    growth_curve_e_e_den = {
-        'growth_curve': "gaussian",
-        'growth_rate': 10 * gr_scaling,  # (elements/ms)
-        'continuous': False,
-        'eta': 0.0,  # Ca2+
-        'eps': eCa,  # Ca2+
-    }
-
-   # Excitatory synaptic elements of excitatory neurons
     growth_curve_e_e = {
         'growth_curve': "gaussian",
-        'growth_rate': 20 * gr_scaling,  # (elements/ms)
+        'growth_rate': 100 * gr_scaling,  # (elements/ms)
         'continuous': False,
-        'eta': 0.0,  # Ca2+
-        'eps': eCa,  # Ca2+
+        'eta': .01,  # Ca2+
+        'eps': 0.095,  # Ca2+
     }
 
     # Inhibitory synaptic elements of excitatory neurons
     growth_curve_e_i = {
         'growth_curve': "gaussian",
-        'growth_rate': 20 * gr_scaling,  # (elements/ms)
+        'growth_rate': 100 * gr_scaling,  # (elements/ms)
         'continuous': False,
-        'eta': 0.0,  # Ca2+
+        'eta': .01,  # Ca2+
         #'eps': growth_curve_e_e['eps'],  # Ca2+
-        'eps': 1.0,  # Ca2+
+        'eps': growth_curve_e_e['eps'],  # Ca2+
     }
 
     # Excitatory synaptic elements of inhibitory neurons
     growth_curve_i_e = {
         'growth_curve': "gaussian",
-        'growth_rate': 10 * gr_scaling,  # (elements/ms)
+        'growth_rate': 1 * gr_scaling,  # (elements/ms)
         'continuous': False,
         'eta': 0.0,  # Ca2+
-        'eps': iCa,  # Ca2+
+        'eps': 0.175,  # Ca2+
     }
 
     # Inhibitory synaptic elements of inhibitory neurons
     growth_curve_i_i = {
         'growth_curve': "gaussian",
-        'growth_rate': 20 * gr_scaling,  # (elements/ms)
+        'growth_rate': 1 * gr_scaling,  # (elements/ms)
         'continuous': False,
         'eta': 0.0,  # Ca2+
         'eps': growth_curve_i_e['eps']  # Ca2+
     }
 
     growth_curves = {
-                'growth_curve_e_e_den' : growth_curve_e_e_den,
                 'growth_curve_e_e' : growth_curve_e_e,
                 'growth_curve_e_i' : growth_curve_e_i,
                 'growth_curve_i_e' : growth_curve_i_e,
@@ -292,6 +246,7 @@ def build_parameters(T, nuX_aone, gamma_aone, w_input_aone):
         'nuX_aone' : nuX_aone * nEA1 * 0.1,
         #'wMGN' : wMGN,
         #'nuX_stim' : nuX_stim
+        'gamma_aone' : gamma_aone,
     }
 
     # keys need to end with _pars
@@ -302,4 +257,3 @@ def build_parameters(T, nuX_aone, gamma_aone, w_input_aone):
                  ('noise_pars', noise_pars),
                  #('growth_pars', growth_curves)
     ])
-

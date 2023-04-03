@@ -125,20 +125,21 @@ def record_data (o, topology_snn):
     o.neuron_states = record_neuron_state(topology_snn)
 
 
-
 def run(parameters, display=False, plot=True, save=True, load_inputs=False):
-    nest.ResetKernel()
-
     # ############################ SYSTEM
     # experiments parameters
     if not isinstance(parameters, ParameterSet):
         parameters = ParameterSet(parameters)
 
+    print(f"RNG: {parameters.kernel_pars['grng_seed']}")
+    nest.rng_seed = parameters.kernel_pars['grng_seed'] % 100
+    initial_nest_rng_seed = nest.rng_seed
+
     storage_paths = set_storage_locations(parameters.kernel_pars.data_path, parameters.kernel_pars.data_prefix,
                                           parameters.label, save=save)
     # set kernel parameters after reset
-    parameters.kernel_pars['local_num_threads'] = 1 # can't run plasticity with multiple threads
-    parameters.kernel_pars['data_path'] = storage_paths['other'] # store the spikerecorder readings to the other folder
+    parameters.kernel_pars['local_num_threads'] = 1  # can't run plasticity with multiple threads
+    parameters.kernel_pars['data_path'] = storage_paths['other']  # store the spikerecorder readings to the other folder
     nest.SetKernelStatus(extract_nestvalid_dict(parameters.kernel_pars.as_dict(), param_type='kernel'))
 
     logger.update_log_handles(job_name=parameters.label, path=storage_paths['logs'])
@@ -185,7 +186,8 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     nest.Connect(pg_aone, topology_snn.find_population('eA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx})
     nest.Connect(pg_aone, topology_snn.find_population('iA1').nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_ctx})
 
-    if (parameters.hetdelay_pars.hetdelay_ctx):
+    if parameters.hetdelay_pars.hetdelay_ctx:
+        assert False
         # connect the ctx with heterogenous delays
         s = nest.GetConnections(topology_snn.find_population('eA1').nodes, topology_snn.find_population('eA1').nodes)
         s.delay = uniform(low=1., high=3., size=len(s))
@@ -196,7 +198,8 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
         s = nest.GetConnections(topology_snn.find_population('iA1').nodes, topology_snn.find_population('iA1').nodes)
         s.delay = uniform(low=1., high=3., size=len(s))
 
-    if (parameters.hetdelay_pars.hetdelay_thl):
+    if parameters.hetdelay_pars.hetdelay_thl:
+        assert False
         # connect the thl with heterogenous delays
         s = nest.GetConnections(topology_snn.find_population('MGN').nodes, topology_snn.find_population('TRN').nodes)
         s.delay = uniform(low=1., high=3., size=len(s))
@@ -256,26 +259,17 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     rank = str(nest.Rank())
     filepath = os.path.join(storage_paths['activity'], f'spk_{parameters.label}_{rank}')
 
+    nest.rng_seed = parameters.kernel_pars['grng_seed'] % 100
+
     with nest.RunManager():
-        record_interval = 20. * 1000
-
-        for total_time in np.arange(0, 200. * 1000, record_interval):
+        record_interval = 40. * 1000
+        for total_time in np.arange(0, 400. * 1000, record_interval):
             record_data(o, topology_snn)
-
-            ''' Stop Experiment as soon as connectivity in the eA1 crosses 1.6pc
-            if o.nestconnectivity['eA1']['eA1'][-1] > 64000:
-                nest.DisableStructuralPlasticity()
-                print("Target Epsilon Reached")
-            #'''
-
             nest.Run(record_interval)
-
             store_net(topology_snn, rank, storage_paths['other'], total_time)
 
     record_data(o, topology_snn)
 
-    # save the network every 100000 seconds
-    #if (total_time % 100000) == 0:
     topology_snn.extract_activity(flush=False)  # this reads out the recordings
 
     ''' DUMP ALL POPULATIONS INTO A PICKLE FILE '''
@@ -284,10 +278,6 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     # now also saving the spiking info
     with open(filepath, 'wb') as f:
         pickle.dump(o, f)
-
-    # save topology_snn as a pickle file in activity/network
-    #modeldir = os.path.join(filepath, "model")
-    #pickle.dump(topology_snn, modeldir)
 
     ''' Pearson Coeff Not Needed Now
     # temp spike objects to not include the first second in the computation
@@ -305,4 +295,3 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
 
     print(precomputed, flush=True)
     '''
-

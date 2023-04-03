@@ -26,7 +26,7 @@ from utils.system import set_system_parameters
 project_label = 'demyelination'
 
 #experiment_label = 'destexhe-grow-fromzero-recur-ea1-fullcalc'
-experiment_label = 'plasticity-debugging'
+experiment_label = 'plasticity-debugging-unithread'
 
  ######################################################################################
 # system parameters
@@ -196,7 +196,6 @@ def build_parameters(T):
     # for an unknown reason it overshoots the Ca level by .025 in the gaussian case and .05 in the linear case
     eCa = (13 / 100) # target calium level = target activity / 100
     iCa = (17 / 100) / 2
-    update_interval = 1.
 
     gr_scaling = .0001
     g_curve = 'linear'

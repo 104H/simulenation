@@ -1,6 +1,7 @@
 """
-June 30, 2022
-The weights of the model lead to very small EPSPs. This series of experiments is done to explore weights which lead to high EPSPs so that the activity in the model is not dominated by the background noise.
+July 11, 2022
+
+Non Tonotopically connect MGN to the eA1 and back. Stimulate MGN for 100s.
 """
 
 import numpy as np
@@ -85,7 +86,7 @@ def run(parameters, display=False, plot=True, save=True, load_inputs=False):
     # stimulus generator
     ng = nest.Create('poisson_generator', n=1, params={'rate': parameters.noise_pars.nuX_stim, 'start' : 2000., 'stop' : 2000.+parameters.noise_pars.stim_duration})
     # connecting stimulus !!! generator to snn
-    nest.Connect(ng, topology_snn.populations['MGN'].nodes, 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_stim})
+    nest.Connect(ng, topology_snn.populations['MGN'].nodes[:99], 'all_to_all', syn_spec={'weight': parameters.noise_pars.w_noise_stim})
     #'''
 
     nest.Simulate(5000.)

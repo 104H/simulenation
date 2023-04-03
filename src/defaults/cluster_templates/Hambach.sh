@@ -1,14 +1,10 @@
 #!/bin/bash
 
 #SBATCH --nodes={{ nodes }}
-#SBATCH --ntasks=1
-##SBATCH --cpus-per-task={{ ppn }}
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task={{ ppn }}
 #SBATCH --time={{ walltime }}
-##SBATCH --partition={{ queue }}
-#SBATCH --partition=hambach,blaustein,hamstein
-##SBATCH --mem={{ mem }}
-#SBATCH --mem=6000
+#SBATCH --partition={{ queue }}
+#SBATCH --mem={{ mem }}
 
 ## activate conda and set NEST variables
 module load mpi/mpich/3.2
